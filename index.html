@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>四组晚餐服事</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&display=swap">
+<style>
+html{color-scheme:light}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* 单列、手机优先：页眉 → 壹 选名字 → 贰 选参与方式 → 叁 对应分支 → 大家的选择 → 负责人视角 */
+:root{
+  --bg:#F1F5F2; --surface:#FFFFFF; --surface-2:#E5EDE8; --ink:#15211D; --muted:#5A6A64; --line:#D1DCD6;
+  --jade:#24624F; --on-jade:#FFFFFF; --jade-soft:#D7E8E0;
+  --gold:#9C7019; --gold-soft:#F3E8CE;
+  --chili:#BE3628; --chili-soft:#F7DDD8;
+  --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1613; --surface:#15211D; --surface-2:#1D2C27; --ink:#E4EDE9; --muted:#93A59E; --line:#293A34;
+    --jade:#62B89B; --on-jade:#0D1613; --jade-soft:#1B3830;
+    --gold:#DDB257; --gold-soft:#372C15;
+    --chili:#F06B5E; --chili-soft:#41201B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1613; --surface:#15211D; --surface-2:#1D2C27; --ink:#E4EDE9; --muted:#93A59E; --line:#293A34;
+  --jade:#62B89B; --on-jade:#0D1613; --jade-soft:#1B3830;
+  --gold:#DDB257; --gold-soft:#372C15;
+  --chili:#F06B5E; --chili-soft:#41201B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+.wrap{max-width:540px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 64px;display:flex;flex-direction:column;gap:30px}
+
+/* 页眉 */
+.top{display:flex;flex-direction:column;gap:6px}
+.eyebrow{margin:0;font-size:13px;letter-spacing:.08em;color:var(--jade);font-weight:600}
+h1{margin:0;font-family:var(--serif);font-size:30px;line-height:1.25;font-weight:700;text-wrap:balance}
+.meta{margin:0;color:var(--muted);font-size:15px}
+.deadline{margin-top:8px;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:var(--gold-soft);color:var(--gold);font-size:14px;font-weight:600;padding:6px 12px;border-radius:999px;font-variant-numeric:tabular-nums}
+.deadline .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
+.wx{background:var(--chili-soft);color:var(--chili);border-radius:var(--r);padding:12px 14px;font-size:14px;line-height:1.5}
+
+/* 步骤 */
+.step{display:flex;flex-direction:column;gap:12px}
+.step-head{display:flex;align-items:center;gap:10px}
+.num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--jade);color:var(--on-jade);display:grid;place-items:center;font-family:var(--serif);font-size:15px;font-weight:700}
+h2{margin:0;font-family:var(--serif);font-size:21px;font-weight:700;line-height:1.3;text-wrap:balance}
+h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sub{font-weight:400;font-size:14px;color:var(--muted)}
+.hint{margin:0;font-size:14px;color:var(--muted)}
+
+/* 名字 */
+.names{display:flex;flex-wrap:wrap;gap:8px}
+.name{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px}
+.name.sel{background:var(--jade);border-color:var(--jade);color:var(--on-jade)}
+.tag{font-size:11px;padding:1px 6px;border-radius:999px;letter-spacing:.04em;font-weight:600}
+.t-C{background:var(--jade-soft);color:var(--jade)}
+.t-A{background:var(--gold-soft);color:var(--gold)}
+.t-NA{background:var(--surface-2);color:var(--muted)}
+.name.sel .tag{background:var(--on-jade);color:var(--jade)}
+
+/* 参与方式 */
+.modes{display:grid;gap:10px}
+.mode{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:14px 16px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface)}
+.mode .m-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mode .m-name{font-size:17px;font-weight:700}
+.mode .m-desc{font-size:14px;color:var(--muted)}
+.mode .m-side{flex:none;font-family:var(--serif);font-size:20px;font-weight:700;color:var(--jade)}
+.mode.sel{border-color:var(--jade);background:var(--jade-soft)}
+
+/* 付款卡 */
+.pay{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;position:relative}
+.pay-amt{display:flex;align-items:baseline;gap:10px}
+.pay-amt b{font-family:var(--serif);font-size:34px;line-height:1;color:var(--ink)}
+.pay-amt span{color:var(--muted);font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;padding:12px 16px;font-weight:700;font-size:16px;text-decoration:none;border:1.5px solid transparent}
+.btn.primary{background:var(--jade);color:var(--on-jade)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink);font-weight:600;font-size:14px;padding:7px 12px}
+.link{color:var(--jade);font-size:14px;text-align:center}
+.kv{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px 12px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.paid{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--surface-2);font-weight:600}
+.paid input{width:20px;height:20px;accent-color:var(--jade)}
+.stamp{display:inline-block;font-family:var(--serif);font-weight:700;color:var(--chili);border:2px solid var(--chili);border-radius:5px;padding:1px 7px;letter-spacing:.15em;transform:rotate(-8deg);font-size:15px;line-height:1.4}
+.pay .stamp{position:absolute;top:16px;right:16px;font-size:20px;padding:2px 10px}
+
+/* 菜单 */
+.tabs{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;background:transparent;padding:8px;border-radius:9px;font-size:15px;font-weight:600;color:var(--muted)}
+.tabs button.sel{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:16px}
+.dishes{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cat{padding:10px 14px 6px;font-size:12px;letter-spacing:.1em;color:var(--muted);font-weight:700;background:var(--surface-2)}
+.dish{width:100%;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:12px 14px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left}
+.dishes > .dish:first-child,.cat + .dish{border-top:0}
+.dish.on{background:var(--jade-soft)}
+.d-main{min-width:0;display:flex;flex-direction:column}
+.d-zh{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.d-en{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.d-note{font-size:12px;color:var(--gold)}
+.spicy{font-size:11px;font-weight:700;color:var(--chili);border:1px solid var(--chili);border-radius:4px;padding:0 4px;line-height:1.5}
+.d-id{font-size:11px;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.d-price{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.d-act{min-width:52px;text-align:center;font-size:14px;font-weight:700;padding:6px 8px;border-radius:999px;border:1.5px solid var(--jade);color:var(--jade);white-space:nowrap}
+.dish.on .d-act{background:var(--jade);color:var(--on-jade)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--chili);color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.more{width:100%;border:0;border-top:1px solid var(--line);background:transparent;padding:13px;color:var(--jade);font-weight:600;font-size:15px}
+.empty{padding:18px 14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
+.left{font-size:14px;color:var(--chili);font-weight:600}
+
+/* 自带 */
+.bring-row{display:flex;gap:8px}
+.bring-row input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:16px}
+.warn{margin:0;font-size:14px;color:var(--chili)}
+.mine{background:var(--gold-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:15px}
+.mine b{color:var(--gold)}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;font-size:15px}
+
+/* 大家的选择 */
+.board{display:flex;flex-direction:column;gap:14px;padding-top:6px;border-top:1px solid var(--line)}
+.board h2{padding-top:18px}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tally div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column}
+.tally b{font-family:var(--serif);font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
+.tally span{font-size:12px;color:var(--muted)}
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.rank li{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.r-name{font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.flag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--jade);color:var(--on-jade)}
+.flag.tie{background:var(--gold-soft);color:var(--gold)}
+.r-count{font-variant-numeric:tabular-nums;color:var(--chili);font-weight:700;font-size:15px}
+.bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--chili);border-radius:3px}
+.bar.cut i{background:var(--muted)}
+.who{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.wall{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.wall li{background:var(--gold-soft);border-radius:10px;padding:8px 12px;font-size:15px;font-weight:600}
+.wall li span{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+
+/* 负责人视角 */
+.admin{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.admin summary{list-style:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;cursor:pointer}
+.admin summary::-webkit-details-marker{display:none}
+.admin summary::after{content:"展开";font-size:13px;color:var(--jade);font-weight:600}
+.admin[open] summary::after{content:"收起"}
+.admin summary .s-fig{margin-left:auto;font-size:14px;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.admin-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:16px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0}
+.stats div{background:var(--surface-2);border-radius:12px;padding:10px 12px}
+.stats dt{font-size:12px;color:var(--muted)}
+.stats dd{margin:0;font-family:var(--serif);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.todo{display:flex;flex-direction:column;gap:8px;font-size:15px}
+.todo p{margin:0}
+.todo b{color:var(--chili)}
+.order{margin:0;white-space:pre-wrap;background:var(--surface-2);border-radius:12px;padding:12px 14px;font-family:var(--sans);font-size:14px;line-height:1.7;overflow-x:auto}
+.extra{margin:0;font-size:14px;color:var(--muted)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.foot{font-size:13px;color:var(--muted);text-align:center;margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">MYPG 四组 · 十月晚餐服事</p>
+    <h1>10月23日 周五晚餐</h1>
+    <p class="meta">香港园 Hong Kong Garden · 6:45 set up</p>
+    <div class="deadline"><span class="dot"></span><span id="countdown">周四 10/22 晚 8 点截止</span></div>
+  </header>
+
+  <div class="wx" id="wxTip" hidden>你在微信里打开的。如果付款按钮点了没反应，点右上角 ··· 选「在浏览器打开」再付。</div>
+
+  <section class="step" id="stepWho">
+    <div class="step-head"><span class="num">壹</span><h2>你是谁？</h2></div>
+    <p class="hint">点自己的名字（现在是示例名单）。</p>
+    <div class="names" id="names"></div>
+  </section>
+
+  <section class="step" id="stepHow" hidden>
+    <div class="step-head"><span class="num">贰</span><h2 id="howTitle">这个月怎么参与？</h2></div>
+    <div class="modes" id="modes">
+      <button class="mode" data-mode="C"><span class="m-txt"><span class="m-name">拼菜</span><span class="m-desc">交 $25，和大家一起点餐厅的菜</span></span><span class="m-side">$25</span></button>
+      <button class="mode" data-mode="A"><span class="m-txt"><span class="m-name">自己带菜</span><span class="m-desc">做一道菜带到教会</span></span><span class="m-side">带</span></button>
+      <button class="mode" data-mode="NA"><span class="m-txt"><span class="m-name">这次不来</span><span class="m-desc">下个月见</span></span><span class="m-side">缺</span></button>
+    </div>
+  </section>
+
+  <section class="step" id="stepC" hidden>
+    <div class="step-head"><span class="num">叁</span><h2>付款，然后点菜</h2></div>
+    <div class="pay">
+      <span class="stamp" id="payStamp" hidden>已付</span>
+      <div class="pay-amt"><b>$25</b><span>拼菜费 · 两人约拼一道菜</span></div>
+      <a class="btn primary" id="venmoBtn" href="#">打开 Venmo 付 $25</a>
+      <a class="link" id="venmoWeb" href="#" target="_blank" rel="noopener">没跳转？用 Venmo 网页版</a>
+      <dl class="kv">
+        <dt>Venmo</dt><dd id="venmoId"></dd><button class="btn ghost" data-copy="venmo">复制</button>
+        <dt>Zelle</dt><dd id="zelleId"></dd><button class="btn ghost" data-copy="zelle">复制</button>
+        <dt>备注</dt><dd id="payNote"></dd><button class="btn ghost" data-copy="note">复制</button>
+      </dl>
+      <label class="paid"><input type="checkbox" id="paidChk"> 我已付款</label>
+      <p class="hint">用 Zelle 的话：复制号码，打开自己银行 App 里的 Zelle 粘贴，收款人会显示 MAOTIAN。Venmo 按钮没反应时，也可以复制用户名到 Venmo 里搜。付完勾一下「我已付款」，Martin 会对着到账记录核对。</p>
+    </div>
+
+    <h3 style="margin-top:8px">想吃什么？<span class="left" id="left"></span></h3>
+    <p class="hint">每人最多 3 道。红色数字是已经想吃的人数，票多的先订。</p>
+    <div class="tabs" role="tablist">
+      <button id="tabRec" class="sel" data-tab="rec">大家常点</button>
+      <button id="tabAll" data-tab="all">全部菜单</button>
+    </div>
+    <input class="search" id="search" type="search" placeholder="搜菜名、英文或编号，如 左宗 / chow fun / S10" hidden>
+    <div class="dishes" id="dishList"></div>
+  </section>
+
+  <section class="step" id="stepA" hidden>
+    <div class="step-head"><span class="num">叁</span><h2>带什么菜？</h2></div>
+    <div class="mine" id="mineBring" hidden></div>
+    <div class="bring-row">
+      <input id="bringInput" type="text" placeholder="比如：红烧肉、凉拌黄瓜" maxlength="20">
+      <button class="btn primary" id="bringBtn">登记</button>
+    </div>
+    <p class="warn" id="bringWarn" hidden></p>
+    <p class="hint">登记后会出现在下面「自带佳肴」里，大家都能看到，避免撞菜。</p>
+  </section>
+
+  <section class="step" id="stepNA" hidden>
+    <div class="step-head"><span class="num">叁</span><h2>好的，下个月见</h2></div>
+    <div class="note">已经帮你登记「这次不来」。改主意了随时回来点自己的名字，截止前都能改。</div>
+  </section>
+
+  <section class="board">
+    <h2>大家的选择</h2>
+    <div class="tally" id="tally"></div>
+    <h3>想吃排行 <span class="sub" id="rankSub"></span></h3>
+    <ol class="rank" id="rank"></ol>
+    <h3>自带佳肴</h3>
+    <ul class="wall" id="wall"></ul>
+  </section>
+
+  <details class="admin" id="admin">
+    <summary><span>负责人视角</span><span class="s-fig" id="adminSum"></span></summary>
+    <div class="admin-body">
+      <dl class="stats" id="stats"></dl>
+      <div class="todo" id="todo"></div>
+      <h3>下单清单</h3>
+      <pre class="order" id="orderText"></pre>
+      <p class="extra" id="extra"></p>
+      <button class="btn primary" id="copyOrder">复制下单清单</button>
+    </div>
+  </details>
+
+  <p class="foot">原型 · 数据为示例，刷新会还原 · 截止后自动锁定（正式版）</p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const VENMO_ID = 'Maotian-Li';
+const ZELLE_ID = '346-317-1376';
+const ZELLE_RAW = '3463171376';
+const SERVICE = '10/23';
+const MAX = 3;
+const DEADLINE = new Date('2026-10-22T20:00:00-04:00');
+
+const MENU_RAW = `S10|招牌菜|左宗鸡|General Tso's Chicken|16|Y|Y|
+S11|招牌菜|芝麻鸡|Sesame Chicken|16||Y|
+S13|招牌菜|宫保鸡|Kung Po Chicken|16|Y|Y|
+S12|招牌菜|陈皮鸡|Chicken w. Orange Flavor|16|Y||
+S14|招牌菜|鱼香鸡|Chicken w. Garlic Sauce|16|Y||
+S15|招牌菜|腰果鸡|Chicken w. Cashew Nuts|16|||
+S16|招牌菜|黑椒鸡|Chicken w. Black Pepper Sauce|16|||
+S29|招牌菜|全家福|Happy Family|20||Y|鸡/大虾/牛/叉烧
+S30|招牌菜|椒盐鱿鱼|Salt & Pepper Squid|17|Y|Y|
+S7|招牌菜|鱼香虾|Shrimp w. Garlic Sauce|18|Y|Y|
+S1|招牌菜|海鲜大会|Seafood Delight|25|||大虾/带子/蟹肉/蔬菜
+S2|招牌菜|合桃大虾|Jumbo Shrimp w. Walnut in Salad Sauce|24|||
+S3|招牌菜|芦笋大虾|Asparagus Jumbo Shrimp|18|||
+S4|招牌菜|芒果虾|Mango Shrimp|18|||
+S5|招牌菜|湖南虾|Shrimp Hunan Style|18|Y||
+S6|招牌菜|黑椒双鲜|Shrimp & Scallops w. Black Pepper Sauce|25|||
+S8|招牌菜|左宗虾|General Tso's Shrimp|18|Y||
+S9|招牌菜|芝麻虾|Sesame Shrimp|18|||
+S17|招牌菜|番茄牛|Beef w. Tomatoes|17|||
+S18|招牌菜|小辣椒牛肉|Beef w. Long Pepper|18|Y||
+S19|招牌菜|葱爆牛|Beef w. Scallion|18|Y||
+S20|招牌菜|湖南三样|Hunan Triple Delight|20|Y||大虾/鸡/牛
+S21|招牌菜|鱼香牛肉|Beef w. Garlic Sauce|18|Y||
+S22|招牌菜|陈皮牛|Beef w. Orange Flavor|20|Y||
+S23|招牌菜|黑椒牛|Beef w. Black Pepper Sauce|18|||
+S24|招牌菜|京都肉排|Pork Chop Beijing Style|17|||
+S25|招牌菜|木须肉|Moo Shu Pork|16|||配4张薄饼
+S26|招牌菜|木须鸡|Moo Shu Chicken|16|||配4张薄饼
+S27|招牌菜|木须虾|Moo Shu Shrimp|16|||配4张薄饼
+S28|招牌菜|豉椒鱿鱼|Squid w. Black Bean Sauce|17|||
+S31|招牌菜|黑椒鱼|Cod Fish w. Black Pepper Sauce|25|Y||
+45|鸡|蘑菇鸡片|Moo Goo Gai Pan|15|||
+46|鸡|芥兰鸡|Chicken w. Broccoli|15|||
+47|鸡|雪豆鸡|Chicken w. Snow Peas|15|||
+48|鸡|咖喱鸡|Curry Chicken|15|Y||
+49|鸡|豆豉鸡|Chicken w. Black Bean Sauce|15|||
+50|鸡|豆腐鸡|Chicken w. Tofu|15|||
+51|鸡|杂菜鸡|Chicken w. Mixed Vegetables|15|||
+52|鸡|四季豆鸡|Chicken w. String Beans|15|||
+53|鸡|甜酸鸡|Sweet & Sour Chicken|15|||
+62|牛肉|青椒牛|Pepper Steak w. Onion|16|||
+63|牛肉|杂菜牛|Beef w. Mixed Vegetables|16|||
+64|牛肉|芥兰牛|Beef w. Broccoli|16||Y|
+65|牛肉|蘑菇牛|Beef w. Mushroom|16|||
+66|牛肉|豆腐牛|Beef w. Bean Curd|16|||
+67|牛肉|咖喱牛|Curry Beef w. Onions|16|Y||
+68|牛肉|雪豆牛|Beef w. Snow Peas|16|||
+69|牛肉|四季豆牛|Beef w. String Beans|16|||
+54|猪肉|叉烧杂菜|Roast Pork w. Mixed Vegetables|15|||
+55|猪肉|叉烧芥兰|Roast Pork w. Broccoli|15|||
+56|猪肉|叉烧芽菜|Roast Pork w. Bean Sprouts|15|||
+57|猪肉|叉烧豆腐|Roast Pork w. Bean Curd|15|||
+58|猪肉|叉烧蘑菇|Roast Pork w. Mushroom|15|||
+59|猪肉|叉烧四季豆|Roast Pork w. String Beans|15|||
+60|猪肉|回锅肉|Double Cooked Pork|16|||
+61|猪肉|麻婆豆腐|Ma Po Tofu with Pork|16|Y|Y|
+70|海鲜|虾龙糊|Shrimp w. Lobster Sauce|17||Y|
+71|海鲜|杂菜虾|Shrimp w. Mixed Vegetables|17|||
+72|海鲜|芥兰虾|Shrimp w. Broccoli|17|||
+73|海鲜|豆豉虾|Shrimp w. Black Bean Sauce|17|||
+74|海鲜|雪豆虾|Shrimp w. Snow Peas|17|||
+75|海鲜|茄子虾|Shrimp w. Eggplant|17|||
+76|海鲜|豆腐虾|Shrimp w. Bean Curd|17|||
+77|海鲜|虾仁蛋|Shrimp w. Scrambled Egg|18|||
+78|海鲜|咖喱虾|Curry Shrimp|17|Y||
+79|海鲜|腰果虾|Shrimp w. Cashew Nuts|18|||
+87|蔬菜|鱼香茄子|Eggplant w. Garlic Sauce|15|Y|Y|
+83|蔬菜|干扁四季豆|Sauteed String Bean w. Pork|15||Y|
+80|蔬菜|杂菜|Mixed Vegetables|13|||
+81|蔬菜|茄子豆腐|Egg Plant Tofu in Garlic Sauce|15|Y||
+82|蔬菜|鱼香芥兰|Broccoli w. Garlic Sauce|13|Y||
+84|蔬菜|木须菜|Moo Shu Vegetable|15|||
+85|蔬菜|中国芥兰|Chinese Broccoli||||时价，电话问
+86|蔬菜|左宗豆腐|General Tso's Fried Tofu|15|Y||
+H1|健康清蒸|清蒸杂菜豆腐|Steamed Mixed Vegetables w. Bean Curd|14|||酱汁另放
+H2|健康清蒸|清蒸鸡杂菜|Steamed Chicken w. Mixed Vegetables|15|||酱汁另放
+H3|健康清蒸|清蒸芥兰鸡|Steamed Chicken w. Broccoli|15|||酱汁另放
+H4|健康清蒸|清蒸大虾杂菜|Steamed Jumbo Shrimp w. Mixed Vegetables|17|||酱汁另放
+27|粉面|星洲米粉|Singapore Rice Noodle|16|Y|Y|
+28|粉面|干炒牛河|Beef Chow Fun|16||Y|
+26|粉面|本楼炒米粉|House Special Rice Noodle|16|||
+29|粉面|豉汁牛河|Beef Chow Fun w. Black Bean Sauce|17|||
+30|粉面|广东炒面|Cantonese Fried Noodles|17|||
+31|粉面|泰式鸡炒粉|Pad Thai (Chicken)|16|||
+32|粉面|泰式菜炒粉|Pad Thai (Vegetable)|16|||
+38|捞面|本楼捞面|House Special Lo Mein|15||Y|
+33|捞面|素菜捞面|Vegetable Lo Mein|12|||
+34|捞面|鸡捞面|Chicken Lo Mein|13|||
+35|捞面|叉烧捞面|Roast Pork Lo Mein|13|||
+36|捞面|虾捞面|Shrimp Lo Mein|15|||
+37|捞面|牛肉捞面|Beef Lo Mein|15|||
+24|炒饭|本楼炒饭|House Special Fried Rice|15||Y|
+25|炒饭|扬州炒饭|Young Chow Fried Rice|15|||
+18|炒饭|净炒饭|Plain Fried Rice w. Egg|6.5|||
+19|炒饭|叉烧炒饭|Roast Pork Fried Rice|12|||
+20|炒饭|鸡炒饭|Chicken Fried Rice|12|||
+21|炒饭|素菜炒饭|Vegetable Fried Rice|12|||
+22|炒饭|虾炒饭|Shrimp Fried Rice|14|||
+23|炒饭|牛肉炒饭|Beef Fried Rice|14|||
+N1|汤面|牛腩汤面|Beef Stew Noodle Soup|13|||
+N2|汤面|云吞汤面|Wonton Noodle Soup|13|||
+N3|汤面|鲜虾汤面|Shrimp Noodle Soup|13|||
+N4|汤面|海鲜汤面|Seafood Noodle Soup|15|||
+39|芙蓉蛋/炒面|肉芙蓉蛋|Pork Egg Foo Young|14|||
+40|芙蓉蛋/炒面|鸡芙蓉蛋|Chicken Egg Foo Young|14|||
+41|芙蓉蛋/炒面|牛肉芙蓉蛋|Beef Egg Foo Young|14|||
+42|芙蓉蛋/炒面|虾芙蓉蛋|Shrimp Egg Foo Young|14|||
+43|芙蓉蛋/炒面|肉或鸡炒面|Pork or Chicken Chow Mein|14|||
+44|芙蓉蛋/炒面|虾炒面|Shrimp Chow Mein|14|||
+16|小吃|排骨|Bar-B-Q Spare Ribs (5)|12||Y|5条
+17|小吃|无骨排|Boneless Ribs|12|||
+15|小吃|炸鸡翼|Fried Chicken Wings (8)|10|||8个
+14|小吃|锅贴或水饺|Steamed or Fried Dumplings (6)|8|||6个
+13|小吃|炸云吞|Fried Wonton (10)|6.5|||10个
+12|小吃|虾吐司|Shrimp Toast|6|||
+10|小吃|春卷|Egg Roll|2.75|||单个
+11|小吃|菜卷|Spring Roll|2.25|||单个
+4|汤|酸辣汤|Hot & Sour Soup|6|Y||
+1|汤|云吞汤|Wonton Soup|6|||
+2|汤|蛋花汤|Egg Drop Soup|5|||
+3|汤|云吞蛋花汤|Wonton Egg Drop Soup|6|||
+5|汤|瓜菜汤|Vegetable Soup|5.5|||
+6|汤|八宝汤|Eight Ingredients Soup|12|||
+7|汤|榨菜肉丝汤|Shredded Pork & Pickled Cabbage Soup|12|Y||
+8|汤|鸡面汤|Chicken Noodle Soup|10|||
+9|汤|鸡蓉粟米汤|Chicken & Egg Corn Soup|10|||`;
+
+const MENU = MENU_RAW.trim().split('\n').map((l, i) => {
+  const [id, cat, zh, en, price, sp, rec, note] = l.split('|');
+  return { id, cat, zh, en, price: price ? Number(price) : null, spicy: sp === 'Y', rec: rec === 'Y', note: note || '', order: i };
+});
+const CATS = [...new Set(MENU.map(d => d.cat))];
+let custom = [];
+const allDishes = () => MENU.concat(custom);
+const dish = id => allDishes().find(d => d.id === id);
+
+// 示例数据
+const people = [
+  { name: 'Martin', mode: 'C', paid: true,  votes: ['S10', '64', '27'] },
+  { name: '陈嘉怡', mode: 'C', paid: true,  votes: ['S10', '87', 'S30'] },
+  { name: '刘洋',   mode: 'C', paid: true,  votes: ['S10', '64', '16'] },
+  { name: '赵敏',   mode: 'C', paid: false, votes: ['S10', '27', '87'] },
+  { name: '孙浩',   mode: 'C', paid: true,  votes: ['64', 'S29', '16'] },
+  { name: '周婷',   mode: 'C', paid: false, votes: ['S10', '87', '83'] },
+  { name: '吴磊',   mode: 'C', paid: true,  votes: ['64', '27', 'S29'] },
+  { name: '郑晓雯', mode: 'A', bring: '红烧肉' },
+  { name: '王思远', mode: 'A', bring: '凉拌黄瓜' },
+  { name: '林可欣', mode: 'A', bring: '水果拼盘' },
+  { name: '黄子轩', mode: 'NA' },
+  { name: '何静',   mode: 'NA' },
+  { name: '马俊',   mode: null },
+  { name: '许诺',   mode: null },
+  { name: '高雅',   mode: null },
+];
+
+let me = null, tab = 'rec', query = '';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => n == null ? '时价' : '$' + (Number.isInteger(n) ? n : n.toFixed(2));
+const TAG = { C: '拼菜', A: '自带', NA: '不来' };
+
+function counts() {
+  const m = new Map();
+  people.forEach(p => { if (p.mode === 'C') (p.votes || []).forEach(id => { if (!m.has(id)) m.set(id, []); m.get(id).push(p.name); }); });
+  return m;
+}
+function plan() {
+  const C = people.filter(p => p.mode === 'C');
+  const nC = C.length, budget = nC * 25, k = Math.floor(nC / 2);
+  const rank = [...counts().entries()].map(([id, names]) => ({ d: dish(id), names })).filter(x => x.d)
+    .sort((a, b) => b.names.length - a.names.length || a.d.order - b.d.order);
+  const cutCount = k > 0 && rank[k - 1] ? rank[k - 1].names.length : null;
+  const tie = cutCount != null && rank[k] && rank[k].names.length === cutCount;
+  const paid = C.filter(p => p.paid);
+  return { C, nC, budget, k, rank, cutCount, tie, paid, leftover: budget - k * 50 };
+}
+
+/* ---------- 渲染 ---------- */
+function renderNames() {
+  $('#names').innerHTML = people.map((p, i) =>
+    `<button class="name${i === me ? ' sel' : ''}" data-i="${i}" aria-pressed="${i === me}"><span>${esc(p.name)}</span>${p.mode ? `<span class="tag t-${p.mode}">${TAG[p.mode]}</span>` : ''}</button>`
+  ).join('');
+}
+function renderHow() {
+  const show = me != null;
+  $('#stepHow').hidden = !show;
+  if (!show) return;
+  const p = people[me];
+  $('#howTitle').textContent = `${p.name}，这个月怎么参与？`;
+  document.querySelectorAll('.mode').forEach(b => {
+    const on = b.dataset.mode === p.mode;
+    b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on);
+  });
+}
+function renderBranch() {
+  const p = me != null ? people[me] : null;
+  $('#stepC').hidden = !(p && p.mode === 'C');
+  $('#stepA').hidden = !(p && p.mode === 'A');
+  $('#stepNA').hidden = !(p && p.mode === 'NA');
+  if (!p) return;
+  if (p.mode === 'C') { renderPay(p); renderDishes(); }
+  if (p.mode === 'A') renderBring(p);
+}
+function payNote(p) { return `MYPG ${SERVICE} ${p.name}`; }
+function renderPay(p) {
+  const note = encodeURIComponent(payNote(p));
+  $('#venmoBtn').href = `venmo://paycharge?txn=pay&recipients=${encodeURIComponent(VENMO_ID)}&amount=25&note=${note}`;
+  $('#venmoWeb').href = `https://venmo.com/${encodeURIComponent(VENMO_ID)}?txn=pay&amount=25&note=${note}`;
+  $('#venmoId').textContent = '@' + VENMO_ID + '（Maotian Li）';
+  $('#zelleId').textContent = ZELLE_ID;
+  $('#payNote').textContent = payNote(p);
+  $('#paidChk').checked = !!p.paid;
+  $('#payStamp').hidden = !p.paid;
+}
+function dishRow(d, m, mine) {
+  const n = (m.get(d.id) || []).length, on = mine.includes(d.id);
+  return `<button class="dish${on ? ' on' : ''}" data-id="${esc(d.id)}" aria-pressed="${on}">
+    <span class="d-main">
+      <span class="d-zh">${esc(d.zh)}${d.spicy ? '<span class="spicy">辣</span>' : ''}${n ? `<span class="cnt" title="${n} 人想吃">${n}</span>` : ''}</span>
+      <span class="d-en"><span class="d-id">${esc(d.id)}</span> · ${esc(d.en)}</span>
+      ${d.note ? `<span class="d-note">${esc(d.note)}</span>` : ''}
+    </span>
+    <span class="d-price">${money(d.price)}</span>
+    <span class="d-act">${on ? '✓ 已选' : '+1'}</span>
+  </button>`;
+}
+function renderDishes() {
+  const p = people[me], mine = p.votes || [], m = counts();
+  $('#left').textContent = mine.length >= MAX ? '已选满 3 道' : `还能选 ${MAX - mine.length} 道`;
+  $('#tabRec').classList.toggle('sel', tab === 'rec');
+  $('#tabAll').classList.toggle('sel', tab === 'all');
+  $('#search').hidden = tab !== 'all';
+  let html = '';
+  if (tab === 'rec') {
+    const ids = new Set(MENU.filter(d => d.rec).map(d => d.id));
+    m.forEach((_, id) => ids.add(id));
+    custom.forEach(d => ids.add(d.id));
+    const list = [...ids].map(dish).filter(Boolean)
+      .sort((a, b) => ((m.get(b.id) || []).length - (m.get(a.id) || []).length) || a.order - b.order);
+    html = list.map(d => dishRow(d, m, mine)).join('') + `<button class="more" data-goto="all">没有想吃的？看全部菜单（${MENU.length} 道）</button>`;
+  } else {
+    const q = query.trim(), ql = q.toLowerCase();
+    const hit = d => !q || d.zh.includes(q) || d.en.toLowerCase().includes(ql) || d.id.toLowerCase() === ql;
+    const cats = custom.length ? CATS.concat('自定义') : CATS;
+    cats.forEach(c => {
+      const list = allDishes().filter(d => d.cat === c && hit(d));
+      if (list.length) html += `<div class="cat">${esc(c)}</div>` + list.map(d => dishRow(d, m, mine)).join('');
+    });
+    if (!html) html = `<div class="empty">菜单里没找到「${esc(q)}」<button class="btn ghost" id="addCustom">把「${esc(q)}」加进来，问问店家能不能做</button></div>`;
+  }
+  $('#dishList').innerHTML = html;
+}
+function renderBring(p) {
+  const box = $('#mineBring');
+  box.hidden = !p.bring;
+  if (p.bring) box.innerHTML = `你登记的是 <b>${esc(p.bring)}</b>，想换就在下面重新填。`;
+  $('#bringBtn').textContent = p.bring ? '更新' : '登记';
+  checkDup();
+}
+function checkDup() {
+  const v = $('#bringInput').value.trim(), w = $('#bringWarn');
+  const hit = v.length >= 2 && people.find((p, i) => i !== me && p.mode === 'A' && p.bring && (p.bring.includes(v) || v.includes(p.bring)));
+  w.hidden = !hit;
+  if (hit) w.textContent = `${hit.name} 已经登记了「${hit.bring}」，换一道？`;
+}
+function renderBoard() {
+  const P = plan();
+  const nA = people.filter(p => p.mode === 'A').length, nNA = people.filter(p => p.mode === 'NA').length;
+  const nNone = people.filter(p => !p.mode).length;
+  $('#tally').innerHTML = [[P.nC, '拼菜'], [nA, '自带'], [nNA, '不来'], [nNone, '还没填']]
+    .map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
+  $('#rankSub').textContent = P.nC ? `${P.nC} 人拼菜 → 订 ${P.k} 道` : '';
+  const max = P.rank.length ? P.rank[0].names.length : 1;
+  $('#rank').innerHTML = P.rank.length ? P.rank.map((x, i) => {
+    const n = x.names.length, inTop = i < P.k, isTie = P.tie && n === P.cutCount;
+    const flag = isTie ? '<span class="flag tie">并列</span>' : inTop ? '<span class="flag">要订</span>' : '';
+    return `<li><span class="r-name">${esc(x.d.zh)}${flag}</span><span class="r-count">${n} 人</span>
+      <span class="bar${inTop || isTie ? '' : ' cut'}"><i style="width:${(n / max * 100).toFixed(0)}%"></i></span>
+      <span class="who">${x.names.map(esc).join('、')}</span></li>`;
+  }).join('') : '<li class="hint">还没人点菜</li>';
+  const bring = people.filter(p => p.mode === 'A' && p.bring);
+  $('#wall').innerHTML = bring.length ? bring.map(p => `<li>${esc(p.bring)}<span>${esc(p.name)}</span></li>`).join('') : '<li class="hint" style="background:none;padding:0">还没人登记</li>';
+}
+function orderText(P) {
+  let picks = P.rank.slice(0, P.k);
+  const lines = picks.map((x, i) => `${i + 1}. ${x.d.zh} ${x.d.en}`);
+  return `香港园 (732) 356-5779\n${SERVICE} 周五 6pm 取\n共 ${P.k} 道，每道做 $50 左右的量：\n${lines.join('\n') || '（还没人点菜）'}\n白饭少放一些，谢谢！`;
+}
+function renderAdmin() {
+  const P = plan();
+  const paidAmt = P.paid.length * 25;
+  $('#adminSum').textContent = `订 ${P.k} 道 · 已收 $${paidAmt}/$${P.budget}`;
+  $('#stats').innerHTML = [['拼菜人数', P.nC], ['预算', '$' + P.budget], ['要订', P.k + ' 道'], ['已付款', `${P.paid.length}/${P.nC}`]]
+    .map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join('');
+  const unpaid = P.C.filter(p => !p.paid).map(p => p.name);
+  const none = people.filter(p => !p.mode).map(p => p.name);
+  $('#todo').innerHTML =
+    `<p>未付款：${unpaid.length ? `<b>${unpaid.map(esc).join('、')}</b>（截止前私聊）` : '都付了 <span class="stamp">已付</span>'}</p>` +
+    `<p>还没填：${none.length ? esc(none.join('、')) : '全员已填'}</p>`;
+  $('#orderText').textContent = orderText(P);
+  const notes = [];
+  if (P.tie) notes.push('最后一道有并列，打电话时你来定。');
+  if (P.leftover > 0) notes.push(`单数人拼菜，多出 $${P.leftover}，可以加一份小吃（如排骨 $12）或让每道多装一点。`);
+  $('#extra').textContent = notes.join(' ');
+  $('#extra').hidden = !notes.length;
+}
+function renderAll() { renderNames(); renderHow(); renderBranch(); renderBoard(); renderAdmin(); }
+
+/* ---------- 交互 ---------- */
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
+}
+async function copy(text, ok) {
+  try { await navigator.clipboard.writeText(text); toast(ok || '已复制'); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let done = false; try { done = document.execCommand('copy'); } catch (_) {}
+    ta.remove(); toast(done ? (ok || '已复制') : '复制没成功，请长按文字手动复制');
+  }
+}
+
+$('#names').addEventListener('click', e => {
+  const b = e.target.closest('.name'); if (!b) return;
+  me = Number(b.dataset.i); tab = 'rec'; query = ''; $('#search').value = ''; $('#bringInput').value = '';
+  renderAll();
+  $('#stepHow').scrollIntoView({ block: 'start' });
+});
+$('#modes').addEventListener('click', e => {
+  const b = e.target.closest('.mode'); if (!b || me == null) return;
+  const p = people[me], m = b.dataset.mode;
+  p.mode = m;
+  if (m !== 'C') { p.votes = []; p.paid = false; }
+  if (m !== 'A') p.bring = '';
+  if (m === 'C' && !p.votes) p.votes = [];
+  renderAll();
+  const target = { C: '#stepC', A: '#stepA', NA: '#stepNA' }[m];
+  $(target).scrollIntoView({ block: 'start' });
+});
+$('#paidChk').addEventListener('change', e => { people[me].paid = e.target.checked; renderAll(); if (e.target.checked) toast('谢谢！已标记付款'); });
+document.querySelector('.pay').addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]'); if (!b) return;
+  const p = people[me];
+  copy({ venmo: VENMO_ID, zelle: ZELLE_RAW, note: payNote(p) }[b.dataset.copy], { venmo: 'Venmo 用户名已复制', zelle: 'Zelle 号码已复制，去银行 App 粘贴', note: '备注已复制' }[b.dataset.copy]);
+});
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  tab = b.dataset.tab; renderDishes();
+});
+$('#search').addEventListener('input', e => { query = e.target.value; renderDishes(); });
+$('#dishList').addEventListener('click', e => {
+  if (e.target.closest('[data-goto]')) { tab = 'all'; renderDishes(); $('#search').focus(); return; }
+  if (e.target.closest('#addCustom')) {
+    const zh = query.trim(); if (!zh) return;
+    const d = { id: 'X' + (custom.length + 1), cat: '自定义', zh, en: '自定义加菜', price: null, spicy: false, rec: true, note: '菜单里没有，电话时问店家', order: 1000 + custom.length };
+    custom.push(d); query = ''; $('#search').value = '';
+    toggleVote(d.id); return;
+  }
+  const b = e.target.closest('.dish'); if (b) toggleVote(b.dataset.id);
+});
+function toggleVote(id) {
+  const p = people[me]; p.votes = p.votes || [];
+  const i = p.votes.indexOf(id);
+  if (i >= 0) p.votes.splice(i, 1);
+  else {
+    if (p.votes.length >= MAX) { toast('最多选 3 道，先取消一道'); return; }
+    p.votes.push(id);
+  }
+  renderNames(); renderDishes(); renderBoard(); renderAdmin();
+}
+$('#bringInput').addEventListener('input', checkDup);
+$('#bringInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#bringBtn').click(); });
+$('#bringBtn').addEventListener('click', () => {
+  const v = $('#bringInput').value.trim();
+  if (!v) { toast('先写上菜名'); return; }
+  people[me].bring = v; $('#bringInput').value = '';
+  renderAll(); toast(`已登记：${v}`);
+});
+$('#copyOrder').addEventListener('click', () => copy($('#orderText').textContent, '下单清单已复制'));
+
+function tick() {
+  const ms = DEADLINE - Date.now(), el = $('#countdown');
+  if (ms <= 0) { el.textContent = '已截止，Martin 正在下单'; return; }
+  const h = Math.floor(ms / 3600000), mi = Math.floor(ms % 3600000 / 60000);
+  const left = h >= 24 ? `${Math.floor(h / 24)} 天 ${h % 24} 小时` : `${h} 小时 ${mi} 分`;
+  el.textContent = `周四 10/22 晚 8 点截止 · 还剩 ${left}`;
+}
+if (/MicroMessenger/i.test(navigator.userAgent)) $('#wxTip').hidden = false;
+tick(); setInterval(tick, 30000);
+renderAll();
+</script>
+
+</body>
+</html>
