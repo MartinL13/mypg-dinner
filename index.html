@@ -70,6 +70,9 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 .names{display:flex;flex-wrap:wrap;gap:8px}
 .name{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px}
 .name.sel{background:var(--jade);border-color:var(--jade);color:var(--on-jade)}
+.name.new{border-style:dashed;color:var(--jade)}
+.newrow{display:flex;gap:8px}
+.newrow input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:16px}
 .tag{font-size:11px;padding:1px 6px;border-radius:999px;letter-spacing:.04em;font-weight:600}
 .t-C{background:var(--jade-soft);color:var(--jade)}
 .t-A{background:var(--gold-soft);color:var(--gold)}
@@ -132,6 +135,10 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 .warn{margin:0;font-size:14px;color:var(--chili)}
 .mine{background:var(--gold-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:15px}
 .mine b{color:var(--gold)}
+.mine-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mine-list:empty{display:none}
+.mine-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--gold-soft);border-radius:10px;padding:8px 12px;font-size:15px;font-weight:600}
+.mine-list button{border:0;background:transparent;color:var(--muted);font-size:14px;padding:4px 6px}
 .note{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;font-size:15px}
 
 /* 大家的选择 */
@@ -191,15 +198,16 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 
   <section class="step" id="stepWho">
     <div class="step-head"><span class="num">壹</span><h2>你是谁？</h2></div>
-    <p class="hint">点自己的名字（现在是示例名单）。</p>
+    <p class="hint">点自己的名字。第一次来的朋友点最后那个。</p>
     <div class="names" id="names"></div>
+    <div class="newrow" id="newRow" hidden><input id="newName" type="text" placeholder="你的名字" maxlength="12"><button class="btn primary" id="newBtn">加入</button></div>
   </section>
 
   <section class="step" id="stepHow" hidden>
     <div class="step-head"><span class="num">贰</span><h2 id="howTitle">这个月怎么参与？</h2></div>
     <div class="modes" id="modes">
       <button class="mode" data-mode="C"><span class="m-txt"><span class="m-name">拼菜</span><span class="m-desc">交 $25，和大家一起点餐厅的菜</span></span><span class="m-side">$25</span></button>
-      <button class="mode" data-mode="A"><span class="m-txt"><span class="m-name">自己带菜</span><span class="m-desc">做一道菜带到教会</span></span><span class="m-side">带</span></button>
+      <button class="mode" data-mode="A"><span class="m-txt"><span class="m-name">自己带菜</span><span class="m-desc">做菜带到教会，几道都行</span></span><span class="m-side">带</span></button>
       <button class="mode" data-mode="NA"><span class="m-txt"><span class="m-name">这次不来</span><span class="m-desc">下个月见</span></span><span class="m-side">缺</span></button>
     </div>
   </section>
@@ -232,13 +240,13 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 
   <section class="step" id="stepA" hidden>
     <div class="step-head"><span class="num">叁</span><h2>带什么菜？</h2></div>
-    <div class="mine" id="mineBring" hidden></div>
+    <ul class="mine-list" id="mineBring"></ul>
     <div class="bring-row">
       <input id="bringInput" type="text" placeholder="比如：红烧肉、凉拌黄瓜" maxlength="20">
       <button class="btn primary" id="bringBtn">登记</button>
     </div>
     <p class="warn" id="bringWarn" hidden></p>
-    <p class="hint">登记后会出现在下面「自带佳肴」里，大家都能看到，避免撞菜。</p>
+    <p class="hint">带几道就登记几道，一道一道加。登记后会出现在下面「自带佳肴」里，大家都能看到，避免撞菜。</p>
   </section>
 
   <section class="step" id="stepNA" hidden>
@@ -286,30 +294,13 @@ S12|招牌菜|陈皮鸡|Chicken w. Orange Flavor|16|Y||
 S14|招牌菜|鱼香鸡|Chicken w. Garlic Sauce|16|Y||
 S15|招牌菜|腰果鸡|Chicken w. Cashew Nuts|16|||
 S16|招牌菜|黑椒鸡|Chicken w. Black Pepper Sauce|16|||
-S29|招牌菜|全家福|Happy Family|20||Y|鸡/大虾/牛/叉烧
 S30|招牌菜|椒盐鱿鱼|Salt & Pepper Squid|17|Y|Y|
-S7|招牌菜|鱼香虾|Shrimp w. Garlic Sauce|18|Y|Y|
-S1|招牌菜|海鲜大会|Seafood Delight|25|||大虾/带子/蟹肉/蔬菜
-S2|招牌菜|合桃大虾|Jumbo Shrimp w. Walnut in Salad Sauce|24|||
-S3|招牌菜|芦笋大虾|Asparagus Jumbo Shrimp|18|||
-S4|招牌菜|芒果虾|Mango Shrimp|18|||
-S5|招牌菜|湖南虾|Shrimp Hunan Style|18|Y||
-S6|招牌菜|黑椒双鲜|Shrimp & Scallops w. Black Pepper Sauce|25|||
-S8|招牌菜|左宗虾|General Tso's Shrimp|18|Y||
-S9|招牌菜|芝麻虾|Sesame Shrimp|18|||
 S17|招牌菜|番茄牛|Beef w. Tomatoes|17|||
-S18|招牌菜|小辣椒牛肉|Beef w. Long Pepper|18|Y||
-S19|招牌菜|葱爆牛|Beef w. Scallion|18|Y||
-S20|招牌菜|湖南三样|Hunan Triple Delight|20|Y||大虾/鸡/牛
-S21|招牌菜|鱼香牛肉|Beef w. Garlic Sauce|18|Y||
-S22|招牌菜|陈皮牛|Beef w. Orange Flavor|20|Y||
-S23|招牌菜|黑椒牛|Beef w. Black Pepper Sauce|18|||
 S24|招牌菜|京都肉排|Pork Chop Beijing Style|17|||
 S25|招牌菜|木须肉|Moo Shu Pork|16|||配4张薄饼
 S26|招牌菜|木须鸡|Moo Shu Chicken|16|||配4张薄饼
 S27|招牌菜|木须虾|Moo Shu Shrimp|16|||配4张薄饼
 S28|招牌菜|豉椒鱿鱼|Squid w. Black Bean Sauce|17|||
-S31|招牌菜|黑椒鱼|Cod Fish w. Black Pepper Sauce|25|Y||
 45|鸡|蘑菇鸡片|Moo Goo Gai Pan|15|||
 46|鸡|芥兰鸡|Chicken w. Broccoli|15|||
 47|鸡|雪豆鸡|Chicken w. Snow Peas|15|||
@@ -342,16 +333,13 @@ S31|招牌菜|黑椒鱼|Cod Fish w. Black Pepper Sauce|25|Y||
 74|海鲜|雪豆虾|Shrimp w. Snow Peas|17|||
 75|海鲜|茄子虾|Shrimp w. Eggplant|17|||
 76|海鲜|豆腐虾|Shrimp w. Bean Curd|17|||
-77|海鲜|虾仁蛋|Shrimp w. Scrambled Egg|18|||
 78|海鲜|咖喱虾|Curry Shrimp|17|Y||
-79|海鲜|腰果虾|Shrimp w. Cashew Nuts|18|||
 87|蔬菜|鱼香茄子|Eggplant w. Garlic Sauce|15|Y|Y|
 83|蔬菜|干扁四季豆|Sauteed String Bean w. Pork|15||Y|
 80|蔬菜|杂菜|Mixed Vegetables|13|||
 81|蔬菜|茄子豆腐|Egg Plant Tofu in Garlic Sauce|15|Y||
 82|蔬菜|鱼香芥兰|Broccoli w. Garlic Sauce|13|Y||
 84|蔬菜|木须菜|Moo Shu Vegetable|15|||
-85|蔬菜|中国芥兰|Chinese Broccoli||||时价，电话问
 86|蔬菜|左宗豆腐|General Tso's Fried Tofu|15|Y||
 H1|健康清蒸|清蒸杂菜豆腐|Steamed Mixed Vegetables w. Bean Curd|14|||酱汁另放
 H2|健康清蒸|清蒸鸡杂菜|Steamed Chicken w. Mixed Vegetables|15|||酱汁另放
@@ -415,24 +403,18 @@ let custom = [];
 const allDishes = () => MENU.concat(custom);
 const dish = id => allDishes().find(d => d.id === id);
 
-// 示例数据
-const people = [
-  { name: 'Martin', mode: 'C', paid: true,  votes: ['S10', '64', '27'] },
-  { name: '陈嘉怡', mode: 'C', paid: true,  votes: ['S10', '87', 'S30'] },
-  { name: '刘洋',   mode: 'C', paid: true,  votes: ['S10', '64', '16'] },
-  { name: '赵敏',   mode: 'C', paid: false, votes: ['S10', '27', '87'] },
-  { name: '孙浩',   mode: 'C', paid: true,  votes: ['64', 'S29', '16'] },
-  { name: '周婷',   mode: 'C', paid: false, votes: ['S10', '87', '83'] },
-  { name: '吴磊',   mode: 'C', paid: true,  votes: ['64', '27', 'S29'] },
-  { name: '郑晓雯', mode: 'A', bring: '红烧肉' },
-  { name: '王思远', mode: 'A', bring: '凉拌黄瓜' },
-  { name: '林可欣', mode: 'A', bring: '水果拼盘' },
-  { name: '黄子轩', mode: 'NA' },
-  { name: '何静',   mode: 'NA' },
-  { name: '马俊',   mode: null },
-  { name: '许诺',   mode: null },
-  { name: '高雅',   mode: null },
-];
+// 名单来自 Google Sheet；参与数据为示例，刷新还原
+const ROSTER = ['顾承辅导','丹清辅导','逸卓','Lydia','Andrew','Sabrina','Martin','Nancy','Jessy','厚科','人杰','晓霏','王彩华','汪明'];
+const SAMPLE = {
+  'Martin': { mode: 'C', paid: true,  votes: ['S10', '64', '27'] },
+  'Lydia':  { mode: 'C', paid: true,  votes: ['S10', '87', '61'] },
+  'Andrew': { mode: 'C', paid: false, votes: ['S10', '64', '16'] },
+  'Nancy':  { mode: 'C', paid: true,  votes: ['64', '27', '87'] },
+  'Jessy':  { mode: 'A', bring: ['红烧肉', '凉拌黄瓜'] },
+  '晓霏':   { mode: 'A', bring: ['水果拼盘'] },
+  '汪明':   { mode: 'NA' },
+};
+const people = ROSTER.map(name => Object.assign({ name, mode: null, votes: [], bring: [], paid: false }, SAMPLE[name] || {}));
 
 let me = null, tab = 'rec', query = '';
 const $ = s => document.querySelector(s);
@@ -460,7 +442,7 @@ function plan() {
 function renderNames() {
   $('#names').innerHTML = people.map((p, i) =>
     `<button class="name${i === me ? ' sel' : ''}" data-i="${i}" aria-pressed="${i === me}"><span>${esc(p.name)}</span>${p.mode ? `<span class="tag t-${p.mode}">${TAG[p.mode]}</span>` : ''}</button>`
-  ).join('');
+  ).join('') + `<button class="name new" id="newFriend">＋ 我是新朋友</button>`;
 }
 function renderHow() {
   const show = me != null;
@@ -532,17 +514,16 @@ function renderDishes() {
   $('#dishList').innerHTML = html;
 }
 function renderBring(p) {
-  const box = $('#mineBring');
-  box.hidden = !p.bring;
-  if (p.bring) box.innerHTML = `你登记的是 <b>${esc(p.bring)}</b>，想换就在下面重新填。`;
-  $('#bringBtn').textContent = p.bring ? '更新' : '登记';
+  $('#mineBring').innerHTML = (p.bring || []).map((b, i) => `<li><span>${esc(b)}</span><button data-rm="${i}" aria-label="取消 ${esc(b)}">取消</button></li>`).join('');
+  $('#bringBtn').textContent = (p.bring || []).length ? '再加一道' : '登记';
   checkDup();
 }
 function checkDup() {
   const v = $('#bringInput').value.trim(), w = $('#bringWarn');
-  const hit = v.length >= 2 && people.find((p, i) => i !== me && p.mode === 'A' && p.bring && (p.bring.includes(v) || v.includes(p.bring)));
+  let hit = null, hitDish = '';
+  if (v.length >= 2) people.forEach((p, i) => { if (!hit && i !== me && p.mode === 'A') (p.bring || []).forEach(b => { if (!hit && (b.includes(v) || v.includes(b))) { hit = p; hitDish = b; } }); });
   w.hidden = !hit;
-  if (hit) w.textContent = `${hit.name} 已经登记了「${hit.bring}」，换一道？`;
+  if (hit) w.textContent = `${hit.name} 已经登记了「${hitDish}」，换一道？`;
 }
 function renderBoard() {
   const P = plan();
@@ -559,8 +540,9 @@ function renderBoard() {
       <span class="bar${inTop || isTie ? '' : ' cut'}"><i style="width:${(n / max * 100).toFixed(0)}%"></i></span>
       <span class="who">${x.names.map(esc).join('、')}</span></li>`;
   }).join('') : '<li class="hint">还没人点菜</li>';
-  const bring = people.filter(p => p.mode === 'A' && p.bring);
-  $('#wall').innerHTML = bring.length ? bring.map(p => `<li>${esc(p.bring)}<span>${esc(p.name)}</span></li>`).join('') : '<li class="hint" style="background:none;padding:0">还没人登记</li>';
+  const bring = [];
+  people.forEach(p => { if (p.mode === 'A') (p.bring || []).forEach(b => bring.push([b, p.name])); });
+  $('#wall').innerHTML = bring.length ? bring.map(([b, n]) => `<li>${esc(b)}<span>${esc(n)}</span></li>`).join('') : '<li class="hint" style="background:none;padding:0">还没人登记</li>';
 }
 function orderText(P) {
   let picks = P.rank.slice(0, P.k);
@@ -604,7 +586,7 @@ async function copy(text, ok) {
 }
 
 $('#names').addEventListener('click', e => {
-  const b = e.target.closest('.name'); if (!b) return;
+  const b = e.target.closest('.name'); if (!b || b.id === 'newFriend') return;
   me = Number(b.dataset.i); tab = 'rec'; query = ''; $('#search').value = ''; $('#bringInput').value = '';
   renderAll();
   $('#stepHow').scrollIntoView({ block: 'start' });
@@ -614,7 +596,7 @@ $('#modes').addEventListener('click', e => {
   const p = people[me], m = b.dataset.mode;
   p.mode = m;
   if (m !== 'C') { p.votes = []; p.paid = false; }
-  if (m !== 'A') p.bring = '';
+  if (m !== 'A') p.bring = [];
   if (m === 'C' && !p.votes) p.votes = [];
   renderAll();
   const target = { C: '#stepC', A: '#stepA', NA: '#stepNA' }[m];
@@ -656,8 +638,28 @@ $('#bringInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#b
 $('#bringBtn').addEventListener('click', () => {
   const v = $('#bringInput').value.trim();
   if (!v) { toast('先写上菜名'); return; }
-  people[me].bring = v; $('#bringInput').value = '';
+  const p = people[me]; p.bring = p.bring || [];
+  if (p.bring.includes(v)) { toast('已经登记过这道了'); return; }
+  p.bring.push(v); $('#bringInput').value = '';
   renderAll(); toast(`已登记：${v}`);
+});
+$('#mineBring').addEventListener('click', e => {
+  const b = e.target.closest('[data-rm]'); if (!b) return;
+  people[me].bring.splice(Number(b.dataset.rm), 1); renderAll();
+});
+$('#names').addEventListener('click', e => {
+  if (!e.target.closest('#newFriend')) return;
+  $('#newRow').hidden = false; $('#newName').focus();
+});
+$('#newName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#newBtn').click(); });
+$('#newBtn').addEventListener('click', () => {
+  const v = $('#newName').value.trim();
+  if (!v) { toast('先写上名字'); return; }
+  const dup = people.findIndex(p => p.name === v);
+  if (dup >= 0) { me = dup; toast('名单里已经有你了，直接用这个'); }
+  else { people.push({ name: v, mode: null, votes: [], bring: [], paid: false }); me = people.length - 1; toast(`欢迎 ${v}！`); }
+  $('#newName').value = ''; $('#newRow').hidden = true;
+  renderAll(); $('#stepHow').scrollIntoView({ block: 'start' });
 });
 $('#copyOrder').addEventListener('click', () => copy($('#orderText').textContent, '下单清单已复制'));
 
