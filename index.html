@@ -55,7 +55,9 @@ h1{margin:0;font-family:var(--serif);font-size:30px;line-height:1.25;font-weight
 .meta{margin:0;color:var(--muted);font-size:15px}
 .deadline{margin-top:8px;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:var(--gold-soft);color:var(--gold);font-size:14px;font-weight:600;padding:6px 12px;border-radius:999px;font-variant-numeric:tabular-nums}
 .deadline .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
-.wx{background:var(--chili-soft);color:var(--chili);border-radius:var(--r);padding:12px 14px;font-size:14px;line-height:1.5}
+.wx{background:var(--chili-soft);color:var(--chili);}
+.wx.ok{background:var(--jade-soft);color:var(--jade)}
+.wx{border-radius:var(--r);padding:12px 14px;font-size:14px;line-height:1.5}
 
 /* 步骤 */
 .step{display:flex;flex-direction:column;gap:12px}
@@ -71,6 +73,7 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 .name{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px}
 .name.sel{background:var(--jade);border-color:var(--jade);color:var(--on-jade)}
 .name.new{border-style:dashed;color:var(--jade)}
+body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #paidChk,body.locked .mine-list button{pointer-events:none;opacity:.55}
 .newrow{display:flex;gap:8px}
 .newrow input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:16px}
 .tag{font-size:11px;padding:1px 6px;border-radius:999px;letter-spacing:.04em;font-weight:600}
@@ -188,17 +191,18 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 
 <div class="wrap">
   <header class="top">
-    <p class="eyebrow">MYPG 四组 · 十月晚餐服事</p>
-    <h1>10月23日 周五晚餐</h1>
+    <p class="eyebrow" id="eyebrow">MYPG 四组 · 晚餐服事</p>
+    <h1 id="h1">周五晚餐</h1>
     <p class="meta">香港园 Hong Kong Garden · 6:45 set up</p>
-    <div class="deadline"><span class="dot"></span><span id="countdown">周四 10/22 晚 8 点截止</span></div>
+    <div class="deadline"><span class="dot"></span><span id="countdown">读取中…</span></div>
   </header>
 
+  <div class="wx" id="status" hidden></div>
   <div class="wx" id="wxTip" hidden>你在微信里打开的。如果付款按钮点了没反应，点右上角 ··· 选「在浏览器打开」再付。</div>
 
   <section class="step" id="stepWho">
     <div class="step-head"><span class="num">壹</span><h2>你是谁？</h2></div>
-    <p class="hint">点自己的名字。第一次来的朋友点最后那个。</p>
+    <p class="hint">点自己的名字。第一次来的朋友点最后那个。周四晚 7 点前没填的，默认算拼菜。</p>
     <div class="names" id="names"></div>
     <div class="newrow" id="newRow" hidden><input id="newName" type="text" placeholder="你的名字" maxlength="12"><button class="btn primary" id="newBtn">加入</button></div>
   </section>
@@ -275,18 +279,19 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
     </div>
   </details>
 
-  <p class="foot">原型 · 数据为示例，刷新会还原 · 截止后自动锁定（正式版）</p>
+  <p class="foot" id="foot">数据实时同步到小组的 Google Sheet · 截止后自动锁定</p>
 </div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
+/* ===== 配置 ===== */
+const API_URL = '';                 // 部署 Apps Script 后填 https://script.google.com/macros/s/…/exec；留空 = 演示模式
 const VENMO_ID = 'Maotian-Li';
 const ZELLE_ID = '346-317-1376';
 const ZELLE_RAW = '3463171376';
-const SERVICE = '10/23';
-const MAX = 3;
-const DEADLINE = new Date('2026-10-22T20:00:00-04:00');
+const RESTAURANT_PHONE = '(732) 356-5779';
 
+/* ===== 演示数据（没接后端时用） ===== */
 const MENU_RAW = `S10|招牌菜|左宗鸡|General Tso's Chicken|16|Y|Y|
 S11|招牌菜|芝麻鸡|Sesame Chicken|16||Y|
 S13|招牌菜|宫保鸡|Kung Po Chicken|16|Y|Y|
@@ -393,19 +398,8 @@ N4|汤面|海鲜汤面|Seafood Noodle Soup|15|||
 7|汤|榨菜肉丝汤|Shredded Pork & Pickled Cabbage Soup|12|Y||
 8|汤|鸡面汤|Chicken Noodle Soup|10|||
 9|汤|鸡蓉粟米汤|Chicken & Egg Corn Soup|10|||`;
-
-const MENU = MENU_RAW.trim().split('\n').map((l, i) => {
-  const [id, cat, zh, en, price, sp, rec, note] = l.split('|');
-  return { id, cat, zh, en, price: price ? Number(price) : null, spicy: sp === 'Y', rec: rec === 'Y', note: note || '', order: i };
-});
-const CATS = [...new Set(MENU.map(d => d.cat))];
-let custom = [];
-const allDishes = () => MENU.concat(custom);
-const dish = id => allDishes().find(d => d.id === id);
-
-// 名单来自 Google Sheet；参与数据为示例，刷新还原
-const ROSTER = ['顾承辅导','丹清辅导','逸卓','Lydia','Andrew','Sabrina','Martin','Nancy','Jessy','厚科','人杰','晓霏','王彩华','汪明'];
-const SAMPLE = {
+const DEMO_ROSTER = ['顾承辅导','丹清辅导','逸卓','Lydia','Andrew','Sabrina','Martin','Nancy','Jessy','厚科','人杰','晓霏','王彩华','汪明'];
+const DEMO_PEOPLE = {
   'Martin': { mode: 'C', paid: true,  votes: ['S10', '64', '27'] },
   'Lydia':  { mode: 'C', paid: true,  votes: ['S10', '87', '61'] },
   'Andrew': { mode: 'C', paid: false, votes: ['S10', '64', '16'] },
@@ -414,49 +408,125 @@ const SAMPLE = {
   '晓霏':   { mode: 'A', bring: ['水果拼盘'] },
   '汪明':   { mode: 'NA' },
 };
-const people = ROSTER.map(name => Object.assign({ name, mode: null, votes: [], bring: [], paid: false }, SAMPLE[name] || {}));
+function demoState() {
+  const menu = MENU_RAW.trim().split('\n').map((l, i) => {
+    const [id, cat, zh, en, price, sp, rec, note] = l.split('|');
+    return { id, cat, zh, en, price: price ? Number(price) : null, spicy: sp === 'Y', rec: rec === 'Y', note: note || '', order: i };
+  });
+  const people = {};
+  DEMO_ROSTER.forEach(n => { people[n] = Object.assign({ mode: null, votes: [], bring: [], paid: false }, DEMO_PEOPLE[n] || {}); });
+  const fri = new Date(); fri.setHours(0,0,0,0); while (fri.getDay() !== 5) fri.setDate(fri.getDate() + 1);
+  const dl = new Date(fri); dl.setDate(dl.getDate() - 1); dl.setHours(19, 0, 0, 0);
+  return { service: { date: fri.toISOString().slice(0, 10), deadline: dl.toISOString(), locked: false, restaurant: '香港园' },
+    roster: DEMO_ROSTER, people, menu, config: { max: 3, price: 25, perDish: 50 } };
+}
 
-let me = null, tab = 'rec', query = '';
+/* ===== 状态 ===== */
+let S = null;            // 服务器状态 {service, roster, people, menu, config}
+let MENU = [], CATS = [], custom = [];
+let me = null, tab = 'rec', query = '', saving = 0;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = n => n == null ? '时价' : '$' + (Number.isInteger(n) ? n : n.toFixed(2));
 const TAG = { C: '拼菜', A: '自带', NA: '不来' };
+const MAX = () => (S && S.config.max) || 3;
+const PRICE = () => (S && S.config.price) || 25;
+const allDishes = () => MENU.concat(custom);
+const dish = id => allDishes().find(d => d.id === id) || (id && { id, zh: id, en: '', cat: '自定义', price: null, order: 9999, custom: true });
+const roster = () => S.roster;
+const P = n => S.people[n] || (S.people[n] = { mode: null, votes: [], bring: [], paid: false });
+const myP = () => me ? P(me) : null;
+const locked = () => S && S.service.locked;
+function serviceLabel() {
+  const [y, m, d] = S.service.date.split('-').map(Number);
+  return { md: `${m}月${d}日`, short: `${m}/${d}`, zh: ['一','二','三','四','五','六','七','八','九','十','十一','十二'][m - 1] };
+}
 
+/* ===== 网络 ===== */
+async function load() {
+  if (!API_URL) { S = demoState(); return; }
+  const r = await fetch(API_URL, { method: 'GET', redirect: 'follow' });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error);
+  S = j.data;
+}
+let saveTimer = null;
+function scheduleSave() {
+  if (!me) return;
+  renderAll();
+  if (!API_URL) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 500);
+}
+async function doSave() {
+  const p = myP(); if (!p) return;
+  saving++; setStatus('保存中…', false);
+  try {
+    const r = await fetch(API_URL, { method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'save', name: me, mode: p.mode, votes: p.votes, bring: p.bring, paid: p.paid }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    const mine = S.people[me];
+    S = j.data; S.people[me] = Object.assign({}, S.people[me], mine);   // 保留本地最新
+    applyMenu(); setStatus('已保存 ✓', true); setTimeout(() => setStatus('', true), 1500);
+  } catch (e) {
+    setStatus('保存失败：' + e.message + '。请刷新重试，或在群里告诉 Martin。', false);
+  } finally { saving--; renderAll(); }
+}
+async function refresh() {
+  if (!API_URL || saving) return;
+  try {
+    const mine = me ? Object.assign({}, S.people[me]) : null;
+    await load(); if (mine) S.people[me] = mine;
+    applyMenu(); renderAll();
+  } catch (e) {}
+}
+function setStatus(msg, ok) {
+  const el = $('#status'); el.hidden = !msg; el.textContent = msg; el.classList.toggle('ok', !!ok);
+}
+function applyMenu() { MENU = S.menu; CATS = [...new Set(MENU.map(d => d.cat))]; }
+
+/* ===== 计算 ===== */
 function counts() {
   const m = new Map();
-  people.forEach(p => { if (p.mode === 'C') (p.votes || []).forEach(id => { if (!m.has(id)) m.set(id, []); m.get(id).push(p.name); }); });
+  roster().forEach(n => { const p = P(n); if (p.mode === 'C') (p.votes || []).forEach(id => { if (!m.has(id)) m.set(id, []); m.get(id).push(n); }); });
   return m;
 }
 function plan() {
-  const C = people.filter(p => p.mode === 'C');
-  const nC = C.length, budget = nC * 25, k = Math.floor(nC / 2);
-  const rank = [...counts().entries()].map(([id, names]) => ({ d: dish(id), names })).filter(x => x.d)
+  const C = roster().filter(n => P(n).mode === 'C');
+  const nC = C.length, budget = nC * PRICE(), k = Math.floor(nC / 2);
+  const rank = [...counts().entries()].map(([id, names]) => ({ d: dish(id), names }))
     .sort((a, b) => b.names.length - a.names.length || a.d.order - b.d.order);
   const cutCount = k > 0 && rank[k - 1] ? rank[k - 1].names.length : null;
   const tie = cutCount != null && rank[k] && rank[k].names.length === cutCount;
-  const paid = C.filter(p => p.paid);
-  return { C, nC, budget, k, rank, cutCount, tie, paid, leftover: budget - k * 50 };
+  const paid = C.filter(n => P(n).paid);
+  return { C, nC, budget, k, rank, cutCount, tie, paid, leftover: budget - k * S.config.perDish };
 }
 
-/* ---------- 渲染 ---------- */
+/* ===== 渲染 ===== */
+function renderHeader() {
+  const L = serviceLabel();
+  $('#eyebrow').textContent = `MYPG 四组 · ${L.zh}月晚餐服事`;
+  $('#h1').textContent = `${L.md} 周五晚餐`;
+  document.body.classList.toggle('locked', locked());
+  tick();
+}
 function renderNames() {
-  $('#names').innerHTML = people.map((p, i) =>
-    `<button class="name${i === me ? ' sel' : ''}" data-i="${i}" aria-pressed="${i === me}"><span>${esc(p.name)}</span>${p.mode ? `<span class="tag t-${p.mode}">${TAG[p.mode]}</span>` : ''}</button>`
-  ).join('') + `<button class="name new" id="newFriend">＋ 我是新朋友</button>`;
+  $('#names').innerHTML = roster().map(n => {
+    const p = P(n);
+    return `<button class="name${n === me ? ' sel' : ''}" data-n="${esc(n)}" aria-pressed="${n === me}"><span>${esc(n)}</span>${p.mode ? `<span class="tag t-${p.mode}">${TAG[p.mode]}</span>` : ''}</button>`;
+  }).join('') + `<button class="name new" id="newFriend">＋ 我是新朋友</button>`;
 }
 function renderHow() {
-  const show = me != null;
-  $('#stepHow').hidden = !show;
-  if (!show) return;
-  const p = people[me];
-  $('#howTitle').textContent = `${p.name}，这个月怎么参与？`;
-  document.querySelectorAll('.mode').forEach(b => {
-    const on = b.dataset.mode === p.mode;
-    b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on);
-  });
+  $('#stepHow').hidden = !me;
+  if (!me) return;
+  $('#howTitle').textContent = `${me}，这个月怎么参与？`;
+  const p = myP();
+  document.querySelectorAll('.mode').forEach(b => { const on = b.dataset.mode === p.mode; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
 }
 function renderBranch() {
-  const p = me != null ? people[me] : null;
+  const p = myP();
   $('#stepC').hidden = !(p && p.mode === 'C');
   $('#stepA').hidden = !(p && p.mode === 'A');
   $('#stepNA').hidden = !(p && p.mode === 'NA');
@@ -464,14 +534,15 @@ function renderBranch() {
   if (p.mode === 'C') { renderPay(p); renderDishes(); }
   if (p.mode === 'A') renderBring(p);
 }
-function payNote(p) { return `MYPG ${SERVICE} ${p.name}`; }
+function payNote() { return `MYPG ${serviceLabel().short} ${me}`; }
 function renderPay(p) {
-  const note = encodeURIComponent(payNote(p));
-  $('#venmoBtn').href = `venmo://paycharge?txn=pay&recipients=${encodeURIComponent(VENMO_ID)}&amount=25&note=${note}`;
-  $('#venmoWeb').href = `https://venmo.com/${encodeURIComponent(VENMO_ID)}?txn=pay&amount=25&note=${note}`;
+  const note = encodeURIComponent(payNote()), amt = PRICE();
+  $('#venmoBtn').href = `venmo://paycharge?txn=pay&recipients=${encodeURIComponent(VENMO_ID)}&amount=${amt}&note=${note}`;
+  $('#venmoBtn').textContent = `打开 Venmo 付 $${amt}`;
+  $('#venmoWeb').href = `https://venmo.com/${encodeURIComponent(VENMO_ID)}?txn=pay&amount=${amt}&note=${note}`;
   $('#venmoId').textContent = '@' + VENMO_ID + '（Maotian Li）';
   $('#zelleId').textContent = ZELLE_ID;
-  $('#payNote').textContent = payNote(p);
+  $('#payNote').textContent = payNote();
   $('#paidChk').checked = !!p.paid;
   $('#payStamp').hidden = !p.paid;
 }
@@ -480,7 +551,7 @@ function dishRow(d, m, mine) {
   return `<button class="dish${on ? ' on' : ''}" data-id="${esc(d.id)}" aria-pressed="${on}">
     <span class="d-main">
       <span class="d-zh">${esc(d.zh)}${d.spicy ? '<span class="spicy">辣</span>' : ''}${n ? `<span class="cnt" title="${n} 人想吃">${n}</span>` : ''}</span>
-      <span class="d-en"><span class="d-id">${esc(d.id)}</span> · ${esc(d.en)}</span>
+      <span class="d-en"><span class="d-id">${esc(d.id)}</span>${d.en ? ' · ' + esc(d.en) : ''}</span>
       ${d.note ? `<span class="d-note">${esc(d.note)}</span>` : ''}
     </span>
     <span class="d-price">${money(d.price)}</span>
@@ -488,18 +559,16 @@ function dishRow(d, m, mine) {
   </button>`;
 }
 function renderDishes() {
-  const p = people[me], mine = p.votes || [], m = counts();
-  $('#left').textContent = mine.length >= MAX ? '已选满 3 道' : `还能选 ${MAX - mine.length} 道`;
+  const p = myP(), mine = p.votes || [], m = counts();
+  $('#left').textContent = mine.length >= MAX() ? `已选满 ${MAX()} 道` : `还能选 ${MAX() - mine.length} 道`;
   $('#tabRec').classList.toggle('sel', tab === 'rec');
   $('#tabAll').classList.toggle('sel', tab === 'all');
   $('#search').hidden = tab !== 'all';
   let html = '';
   if (tab === 'rec') {
     const ids = new Set(MENU.filter(d => d.rec).map(d => d.id));
-    m.forEach((_, id) => ids.add(id));
-    custom.forEach(d => ids.add(d.id));
-    const list = [...ids].map(dish).filter(Boolean)
-      .sort((a, b) => ((m.get(b.id) || []).length - (m.get(a.id) || []).length) || a.order - b.order);
+    m.forEach((_, id) => ids.add(id)); mine.forEach(id => ids.add(id)); custom.forEach(d => ids.add(d.id));
+    const list = [...ids].map(dish).sort((a, b) => ((m.get(b.id) || []).length - (m.get(a.id) || []).length) || a.order - b.order);
     html = list.map(d => dishRow(d, m, mine)).join('') + `<button class="more" data-goto="all">没有想吃的？看全部菜单（${MENU.length} 道）</button>`;
   } else {
     const q = query.trim(), ql = q.toLowerCase();
@@ -521,158 +590,145 @@ function renderBring(p) {
 function checkDup() {
   const v = $('#bringInput').value.trim(), w = $('#bringWarn');
   let hit = null, hitDish = '';
-  if (v.length >= 2) people.forEach((p, i) => { if (!hit && i !== me && p.mode === 'A') (p.bring || []).forEach(b => { if (!hit && (b.includes(v) || v.includes(b))) { hit = p; hitDish = b; } }); });
+  if (v.length >= 2) roster().forEach(n => { const p = P(n); if (!hit && n !== me && p.mode === 'A') (p.bring || []).forEach(b => { if (!hit && (b.includes(v) || v.includes(b))) { hit = n; hitDish = b; } }); });
   w.hidden = !hit;
-  if (hit) w.textContent = `${hit.name} 已经登记了「${hitDish}」，换一道？`;
+  if (hit) w.textContent = `${hit} 已经登记了「${hitDish}」，换一道？`;
 }
 function renderBoard() {
-  const P = plan();
-  const nA = people.filter(p => p.mode === 'A').length, nNA = people.filter(p => p.mode === 'NA').length;
-  const nNone = people.filter(p => !p.mode).length;
-  $('#tally').innerHTML = [[P.nC, '拼菜'], [nA, '自带'], [nNA, '不来'], [nNone, '还没填']]
+  const Pl = plan();
+  const cnt = mode => roster().filter(n => P(n).mode === mode).length;
+  $('#tally').innerHTML = [[Pl.nC, '拼菜'], [cnt('A'), '自带'], [cnt('NA'), '不来'], [cnt(null), '还没填']]
     .map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
-  $('#rankSub').textContent = P.nC ? `${P.nC} 人拼菜 → 订 ${P.k} 道` : '';
-  const max = P.rank.length ? P.rank[0].names.length : 1;
-  $('#rank').innerHTML = P.rank.length ? P.rank.map((x, i) => {
-    const n = x.names.length, inTop = i < P.k, isTie = P.tie && n === P.cutCount;
+  $('#rankSub').textContent = Pl.nC ? `${Pl.nC} 人拼菜 → 订 ${Pl.k} 道` : '';
+  const max = Pl.rank.length ? Pl.rank[0].names.length : 1;
+  $('#rank').innerHTML = Pl.rank.length ? Pl.rank.map((x, i) => {
+    const n = x.names.length, inTop = i < Pl.k, isTie = Pl.tie && n === Pl.cutCount;
     const flag = isTie ? '<span class="flag tie">并列</span>' : inTop ? '<span class="flag">要订</span>' : '';
     return `<li><span class="r-name">${esc(x.d.zh)}${flag}</span><span class="r-count">${n} 人</span>
       <span class="bar${inTop || isTie ? '' : ' cut'}"><i style="width:${(n / max * 100).toFixed(0)}%"></i></span>
       <span class="who">${x.names.map(esc).join('、')}</span></li>`;
   }).join('') : '<li class="hint">还没人点菜</li>';
   const bring = [];
-  people.forEach(p => { if (p.mode === 'A') (p.bring || []).forEach(b => bring.push([b, p.name])); });
+  roster().forEach(n => { const p = P(n); if (p.mode === 'A') (p.bring || []).forEach(b => bring.push([b, n])); });
   $('#wall').innerHTML = bring.length ? bring.map(([b, n]) => `<li>${esc(b)}<span>${esc(n)}</span></li>`).join('') : '<li class="hint" style="background:none;padding:0">还没人登记</li>';
 }
-function orderText(P) {
-  let picks = P.rank.slice(0, P.k);
-  const lines = picks.map((x, i) => `${i + 1}. ${x.d.zh} ${x.d.en}`);
-  return `香港园 (732) 356-5779\n${SERVICE} 周五 6pm 取\n共 ${P.k} 道，每道做 $50 左右的量：\n${lines.join('\n') || '（还没人点菜）'}\n白饭少放一些，谢谢！`;
+function orderText(Pl) {
+  const lines = Pl.rank.slice(0, Pl.k).map((x, i) => `${i + 1}. ${x.d.zh}${x.d.en ? ' ' + x.d.en : ''}`);
+  return `${S.service.restaurant} ${RESTAURANT_PHONE}\n${serviceLabel().short} 周五 6pm 取\n共 ${Pl.k} 道，每道做 $${S.config.perDish} 左右的量：\n${lines.join('\n') || '（还没人点菜）'}\n白饭少放一些，谢谢！`;
 }
 function renderAdmin() {
-  const P = plan();
-  const paidAmt = P.paid.length * 25;
-  $('#adminSum').textContent = `订 ${P.k} 道 · 已收 $${paidAmt}/$${P.budget}`;
-  $('#stats').innerHTML = [['拼菜人数', P.nC], ['预算', '$' + P.budget], ['要订', P.k + ' 道'], ['已付款', `${P.paid.length}/${P.nC}`]]
+  const Pl = plan(), paidAmt = Pl.paid.length * PRICE();
+  $('#adminSum').textContent = `订 ${Pl.k} 道 · 已收 $${paidAmt}/$${Pl.budget}`;
+  $('#stats').innerHTML = [['拼菜人数', Pl.nC], ['预算', '$' + Pl.budget], ['要订', Pl.k + ' 道'], ['已付款', `${Pl.paid.length}/${Pl.nC}`]]
     .map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join('');
-  const unpaid = P.C.filter(p => !p.paid).map(p => p.name);
-  const none = people.filter(p => !p.mode).map(p => p.name);
+  const unpaid = Pl.C.filter(n => !P(n).paid), none = roster().filter(n => !P(n).mode);
   $('#todo').innerHTML =
     `<p>未付款：${unpaid.length ? `<b>${unpaid.map(esc).join('、')}</b>（截止前私聊）` : '都付了 <span class="stamp">已付</span>'}</p>` +
-    `<p>还没填：${none.length ? esc(none.join('、')) : '全员已填'}</p>`;
-  $('#orderText').textContent = orderText(P);
+    `<p>还没填：${none.length ? esc(none.join('、')) + '（默认拼菜）' : '全员已填'}</p>`;
+  $('#orderText').textContent = orderText(Pl);
   const notes = [];
-  if (P.tie) notes.push('最后一道有并列，打电话时你来定。');
-  if (P.leftover > 0) notes.push(`单数人拼菜，多出 $${P.leftover}，可以加一份小吃（如排骨 $12）或让每道多装一点。`);
-  $('#extra').textContent = notes.join(' ');
-  $('#extra').hidden = !notes.length;
+  if (Pl.tie) notes.push('最后一道有并列，打电话时你来定。');
+  if (Pl.leftover > 0) notes.push(`单数人拼菜，多出 $${Pl.leftover}，可以加一份小吃（如排骨 $12）或让每道多装一点。`);
+  $('#extra').textContent = notes.join(' '); $('#extra').hidden = !notes.length;
 }
-function renderAll() { renderNames(); renderHow(); renderBranch(); renderBoard(); renderAdmin(); }
+function renderAll() { renderHeader(); renderNames(); renderHow(); renderBranch(); renderBoard(); renderAdmin(); }
 
-/* ---------- 交互 ---------- */
+/* ===== 交互 ===== */
 let toastTimer;
-function toast(msg) {
-  const t = $('#toast'); t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
-}
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
 async function copy(text, ok) {
   try { await navigator.clipboard.writeText(text); toast(ok || '已复制'); }
   catch (e) {
     const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    let done = false; try { done = document.execCommand('copy'); } catch (_) {}
+    document.body.appendChild(ta); ta.select(); let done = false; try { done = document.execCommand('copy'); } catch (_) {}
     ta.remove(); toast(done ? (ok || '已复制') : '复制没成功，请长按文字手动复制');
   }
 }
-
+function guard() { if (locked()) { toast('已截止，改动请在群里联系 Martin'); return true; } return false; }
+function pick(name) {
+  me = name; tab = 'rec'; query = ''; $('#search').value = ''; $('#bringInput').value = '';
+  try { localStorage.setItem('mypg_me', name); } catch (_) {}
+  renderAll(); $('#stepHow').scrollIntoView({ block: 'start' });
+}
 $('#names').addEventListener('click', e => {
-  const b = e.target.closest('.name'); if (!b || b.id === 'newFriend') return;
-  me = Number(b.dataset.i); tab = 'rec'; query = ''; $('#search').value = ''; $('#bringInput').value = '';
-  renderAll();
-  $('#stepHow').scrollIntoView({ block: 'start' });
+  if (e.target.closest('#newFriend')) { $('#newRow').hidden = false; $('#newName').focus(); return; }
+  const b = e.target.closest('.name'); if (!b) return;
+  pick(b.dataset.n);
+});
+$('#newName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#newBtn').click(); });
+$('#newBtn').addEventListener('click', () => {
+  const v = $('#newName').value.trim().slice(0, 12);
+  if (!v) { toast('先写上名字'); return; }
+  if (!roster().includes(v)) { S.roster.push(v); P(v); toast(`欢迎 ${v}！`); } else toast('名单里已经有你了，直接用这个');
+  $('#newName').value = ''; $('#newRow').hidden = true; pick(v);
 });
 $('#modes').addEventListener('click', e => {
-  const b = e.target.closest('.mode'); if (!b || me == null) return;
-  const p = people[me], m = b.dataset.mode;
+  const b = e.target.closest('.mode'); if (!b || !me || guard()) return;
+  const p = myP(), m = b.dataset.mode;
   p.mode = m;
   if (m !== 'C') { p.votes = []; p.paid = false; }
   if (m !== 'A') p.bring = [];
-  if (m === 'C' && !p.votes) p.votes = [];
-  renderAll();
-  const target = { C: '#stepC', A: '#stepA', NA: '#stepNA' }[m];
-  $(target).scrollIntoView({ block: 'start' });
+  scheduleSave();
+  $({ C: '#stepC', A: '#stepA', NA: '#stepNA' }[m]).scrollIntoView({ block: 'start' });
 });
-$('#paidChk').addEventListener('change', e => { people[me].paid = e.target.checked; renderAll(); if (e.target.checked) toast('谢谢！已标记付款'); });
+$('#paidChk').addEventListener('change', e => { if (guard()) { e.target.checked = !e.target.checked; return; } myP().paid = e.target.checked; scheduleSave(); if (e.target.checked) toast('谢谢！已标记付款'); });
 document.querySelector('.pay').addEventListener('click', e => {
   const b = e.target.closest('[data-copy]'); if (!b) return;
-  const p = people[me];
-  copy({ venmo: VENMO_ID, zelle: ZELLE_RAW, note: payNote(p) }[b.dataset.copy], { venmo: 'Venmo 用户名已复制', zelle: 'Zelle 号码已复制，去银行 App 粘贴', note: '备注已复制' }[b.dataset.copy]);
+  copy({ venmo: VENMO_ID, zelle: ZELLE_RAW, note: payNote() }[b.dataset.copy], { venmo: 'Venmo 用户名已复制', zelle: 'Zelle 号码已复制，去银行 App 粘贴', note: '备注已复制' }[b.dataset.copy]);
 });
-document.querySelector('.tabs').addEventListener('click', e => {
-  const b = e.target.closest('[data-tab]'); if (!b) return;
-  tab = b.dataset.tab; renderDishes();
-});
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderDishes(); });
 $('#search').addEventListener('input', e => { query = e.target.value; renderDishes(); });
 $('#dishList').addEventListener('click', e => {
   if (e.target.closest('[data-goto]')) { tab = 'all'; renderDishes(); $('#search').focus(); return; }
   if (e.target.closest('#addCustom')) {
-    const zh = query.trim(); if (!zh) return;
-    const d = { id: 'X' + (custom.length + 1), cat: '自定义', zh, en: '自定义加菜', price: null, spicy: false, rec: true, note: '菜单里没有，电话时问店家', order: 1000 + custom.length };
-    custom.push(d); query = ''; $('#search').value = '';
-    toggleVote(d.id); return;
+    const zh = query.trim(); if (!zh || guard()) return;
+    custom.push({ id: zh, cat: '自定义', zh, en: '', price: null, spicy: false, rec: true, note: '菜单里没有，电话时问店家', order: 1000 + custom.length });
+    query = ''; $('#search').value = ''; toggleVote(zh); return;
   }
   const b = e.target.closest('.dish'); if (b) toggleVote(b.dataset.id);
 });
 function toggleVote(id) {
-  const p = people[me]; p.votes = p.votes || [];
+  if (guard()) return;
+  const p = myP(); p.votes = p.votes || [];
   const i = p.votes.indexOf(id);
   if (i >= 0) p.votes.splice(i, 1);
-  else {
-    if (p.votes.length >= MAX) { toast('最多选 3 道，先取消一道'); return; }
-    p.votes.push(id);
-  }
-  renderNames(); renderDishes(); renderBoard(); renderAdmin();
+  else { if (p.votes.length >= MAX()) { toast(`最多选 ${MAX()} 道，先取消一道`); return; } p.votes.push(id); }
+  scheduleSave();
 }
 $('#bringInput').addEventListener('input', checkDup);
 $('#bringInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#bringBtn').click(); });
 $('#bringBtn').addEventListener('click', () => {
-  const v = $('#bringInput').value.trim();
-  if (!v) { toast('先写上菜名'); return; }
-  const p = people[me]; p.bring = p.bring || [];
+  if (guard()) return;
+  const v = $('#bringInput').value.trim(); if (!v) { toast('先写上菜名'); return; }
+  const p = myP(); p.bring = p.bring || [];
   if (p.bring.includes(v)) { toast('已经登记过这道了'); return; }
-  p.bring.push(v); $('#bringInput').value = '';
-  renderAll(); toast(`已登记：${v}`);
+  p.bring.push(v); $('#bringInput').value = ''; scheduleSave(); toast(`已登记：${v}`);
 });
-$('#mineBring').addEventListener('click', e => {
-  const b = e.target.closest('[data-rm]'); if (!b) return;
-  people[me].bring.splice(Number(b.dataset.rm), 1); renderAll();
-});
-$('#names').addEventListener('click', e => {
-  if (!e.target.closest('#newFriend')) return;
-  $('#newRow').hidden = false; $('#newName').focus();
-});
-$('#newName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#newBtn').click(); });
-$('#newBtn').addEventListener('click', () => {
-  const v = $('#newName').value.trim();
-  if (!v) { toast('先写上名字'); return; }
-  const dup = people.findIndex(p => p.name === v);
-  if (dup >= 0) { me = dup; toast('名单里已经有你了，直接用这个'); }
-  else { people.push({ name: v, mode: null, votes: [], bring: [], paid: false }); me = people.length - 1; toast(`欢迎 ${v}！`); }
-  $('#newName').value = ''; $('#newRow').hidden = true;
-  renderAll(); $('#stepHow').scrollIntoView({ block: 'start' });
-});
+$('#mineBring').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b || guard()) return; myP().bring.splice(Number(b.dataset.rm), 1); scheduleSave(); });
 $('#copyOrder').addEventListener('click', () => copy($('#orderText').textContent, '下单清单已复制'));
 
 function tick() {
-  const ms = DEADLINE - Date.now(), el = $('#countdown');
-  if (ms <= 0) { el.textContent = '已截止，Martin 正在下单'; return; }
+  if (!S) return;
+  const dl = new Date(S.service.deadline), ms = dl - Date.now(), el = $('#countdown');
+  const dlTxt = `周四 ${dl.getMonth() + 1}/${dl.getDate()} 晚 ${dl.getHours()} 点截止`;
+  if (ms <= 0) { el.textContent = '已截止，Martin 正在下单'; S.service.locked = true; document.body.classList.add('locked'); return; }
   const h = Math.floor(ms / 3600000), mi = Math.floor(ms % 3600000 / 60000);
-  const left = h >= 24 ? `${Math.floor(h / 24)} 天 ${h % 24} 小时` : `${h} 小时 ${mi} 分`;
-  el.textContent = `周四 10/22 晚 8 点截止 · 还剩 ${left}`;
+  el.textContent = `${dlTxt} · 还剩 ${h >= 24 ? `${Math.floor(h / 24)} 天 ${h % 24} 小时` : `${h} 小时 ${mi} 分`}`;
 }
-if (/MicroMessenger/i.test(navigator.userAgent)) $('#wxTip').hidden = false;
-tick(); setInterval(tick, 30000);
-renderAll();
+
+/* ===== 启动 ===== */
+(async () => {
+  if (/MicroMessenger/i.test(navigator.userAgent)) $('#wxTip').hidden = false;
+  try { await load(); }
+  catch (e) { setStatus('读取数据失败：' + e.message + '。刷新试试，或在群里告诉 Martin。', false); return; }
+  applyMenu();
+  if (!API_URL) $('#foot').textContent = '演示模式 · 数据为示例，刷新会还原';
+  try { const saved = localStorage.getItem('mypg_me'); if (saved && roster().includes(saved)) me = saved; } catch (_) {}
+  renderAll();
+  setInterval(tick, 30000);
+  setInterval(refresh, 45000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+})();
 </script>
 
 </body>
