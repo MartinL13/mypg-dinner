@@ -19,8 +19,10 @@ Everyone sees the live board: dish ranking by votes, the potluck wall, and how m
 
 ## Status
 
-**Prototype.** Data is sample data and resets on refresh. Next step is a Google Apps Script backend that reads the menu from, and writes sign-ups back to, the group's existing Google Sheet — so swapping restaurants is just pasting a new menu tab, and historical records stay in one place.
+**Live (Oct 2026).** The page reads from and writes to the group's existing Google Sheet through a Google Apps Script web app (`apps-script/Code.gs`). Sign-ups land in the same name × date grid the group has always used, so records before and after the switch are continuous. The restaurant menu lives in a `菜单` tab — swapping restaurants is pasting a new menu, no code change.
+
+Setup steps for the Sheet side are in `apps-script/部署说明.md`.
 
 ## Stack
 
-Plain HTML/CSS/JS, no build step. Hosted on GitHub Pages. The site never handles money — payment links only.
+Plain HTML/CSS/JS, no build step, hosted on GitHub Pages. Backend is Google Apps Script bound to the Sheet (free, no server). The site never handles money — payment links only.
