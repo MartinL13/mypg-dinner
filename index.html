@@ -433,7 +433,9 @@ const MAX = () => (S && S.config.max) || 3;
 const PRICE = () => (S && S.config.price) || 25;
 const allDishes = () => MENU.concat(custom);
 const dish = id => allDishes().find(d => d.id === id) || (id && { id, zh: id, en: '', cat: '自定义', price: null, order: 9999, custom: true });
-const roster = () => S.roster;
+// 不再显示在名单里的人（Sheet 里的行和历史数据保留）。本月自己填过、或用「新朋友」重新加回来的仍会显示。
+const HIDDEN = new Set(['王彩华', '汪明', 'CC', '潇楠', '禹贤', '子云', '庞迪', '林晨']);
+const roster = () => S.roster.filter(n => !HIDDEN.has(n) || n === me || (S.people[n] && S.people[n].mode));
 const P = n => S.people[n] || (S.people[n] = { mode: null, votes: [], bring: [], paid: false });
 const myP = () => me ? P(me) : null;
 const locked = () => S && S.service.locked;
@@ -659,7 +661,8 @@ $('#newName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#newB
 $('#newBtn').addEventListener('click', () => {
   const v = $('#newName').value.trim().slice(0, 12);
   if (!v) { toast('先写上名字'); return; }
-  if (!roster().includes(v)) { S.roster.push(v); P(v); toast(`欢迎 ${v}！`); } else toast('名单里已经有你了，直接用这个');
+  if (HIDDEN.has(v)) { HIDDEN.delete(v); toast(`欢迎回来 ${v}！`); }
+  else if (!S.roster.includes(v)) { S.roster.push(v); P(v); toast(`欢迎 ${v}！`); } else toast('名单里已经有你了，直接用这个');
   $('#newName').value = ''; $('#newRow').hidden = true; pick(v);
 });
 $('#modes').addEventListener('click', e => {
