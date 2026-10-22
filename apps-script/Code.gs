@@ -56,18 +56,19 @@ function state() {
   const people = {};
   lay.names.forEach(r => {
     const raw = String(sh.getRange(r.row, svc.col).getValue() || '').trim().toUpperCase();
-    people[r.name] = { mode: modeFromCell(raw), votes: [], bring: [], paid: false };
+    people[r.name] = { mode: modeFromCell(raw), votes: [], bring: [], paid: false, method: '', any: false };
   });
   // 细项覆盖
   const data = ss.getSheetByName(SHEET_DATA);
-  const rows = data.getLastRow() > 1 ? data.getRange(2, 1, data.getLastRow() - 1, 7).getValues() : [];
+  const rows = data.getLastRow() > 1 ? data.getRange(2, 1, data.getLastRow() - 1, 9).getValues() : [];
   rows.forEach(r => {
     if (fmtDate(r[0]) !== svc.date) return;
     const name = String(r[1]).trim(); if (!name) return;
-    if (!people[name]) { people[name] = { mode: null, votes: [], bring: [], paid: false }; roster.push(name); }
+    if (!people[name]) { people[name] = { mode: null, votes: [], bring: [], paid: false, method: '', any: false }; roster.push(name); }
     const p = people[name];
     p.mode = r[2] ? String(r[2]) : p.mode;
-    p.votes = split(r[3]); p.bring = split(r[4]); p.paid = r[5] === true || String(r[5]).toUpperCase() === 'TRUE';
+    p.votes = split(r[3]); p.bring = split(r[4]); p.paid = isTrue(r[5]);
+    p.method = String(r[7] || ''); p.any = isTrue(r[8]);
   });
 
   return {
@@ -94,6 +95,7 @@ function readMenu(ss) {
       price: r[4] === '' ? null : Number(r[4]), spicy: yes(r[5]), rec: yes(r[6]), note: String(r[7] || ''), order: i }));
 }
 function yes(v) { return String(v).trim().toUpperCase() === 'Y'; }
+function isTrue(v) { return v === true || String(v).toUpperCase() === 'TRUE'; }
 
 // ---------- 写 ----------
 function save(body) {
@@ -110,6 +112,8 @@ function save(body) {
   const votes = (body.votes || []).map(String).slice(0, MAX_VOTES);
   const bring = (body.bring || []).map(s => String(s).trim().slice(0, 20)).filter(Boolean).slice(0, 8);
   const paid = !!body.paid;
+  const method = ['Venmo', 'Zelle'].indexOf(body.method) >= 0 ? body.method : '';
+  const any = !!body.any;
 
   // 1. 名单矩阵：新朋友插一行
   let who = lay.names.find(r => r.name === name);
@@ -127,8 +131,9 @@ function save(body) {
   const rows = data.getLastRow() > 1 ? data.getRange(2, 1, data.getLastRow() - 1, 2).getValues() : [];
   let rowIdx = -1;
   rows.forEach((r, i) => { if (fmtDate(r[0]) === svc.date && String(r[1]).trim() === name) rowIdx = i + 2; });
-  const rec = [svc.date, name, mode || '', mode === 'C' ? votes.join(';') : '', mode === 'A' ? bring.join(';') : '', mode === 'C' && paid, new Date()];
-  if (rowIdx < 0) data.appendRow(rec); else data.getRange(rowIdx, 1, 1, 7).setValues([rec]);
+  const rec = [svc.date, name, mode || '', mode === 'C' ? votes.join(';') : '', mode === 'A' ? bring.join(';') : '', mode === 'C' && paid, new Date(),
+    mode === 'C' && paid ? method : '', mode === 'C' && any];
+  if (rowIdx < 0) data.appendRow(rec); else data.getRange(rowIdx, 1, 1, 9).setValues([rec]);
 
   // 3. 汇总区
   writeSummary(ss, sh, lay, svc);
@@ -240,9 +245,11 @@ function ensureTabs() {
   const ss = SpreadsheetApp.getActive();
   if (!ss.getSheetByName(SHEET_DATA)) {
     const sh = ss.insertSheet(SHEET_DATA);
-    sh.appendRow(['日期', '名字', '参与', '点菜编号', '自带', '已付款', '更新时间']);
+    sh.appendRow(['日期', '名字', '参与', '点菜编号', '自带', '已付款', '更新时间', '付款方式', '不挑']);
     sh.setFrozenRows(1);
   }
+  const d = ss.getSheetByName(SHEET_DATA);
+  if (!d.getRange(1, 8).getValue()) d.getRange(1, 8, 1, 2).setValues([['付款方式', '不挑']]);
   if (!ss.getSheetByName(SHEET_MENU)) {
     const sh = ss.insertSheet(SHEET_MENU);
     const rows = [['编号', '分类', '中文名', '英文名', '价格', '辣', '团餐推荐', '备注', '启用']];

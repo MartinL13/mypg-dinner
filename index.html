@@ -73,7 +73,7 @@ h3{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap
 .name{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px}
 .name.sel{background:var(--jade);border-color:var(--jade);color:var(--on-jade)}
 .name.new{border-style:dashed;color:var(--jade)}
-body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #paidChk,body.locked .mine-list button{pointer-events:none;opacity:.55}
+body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #payBox button,body.locked #anyBtn,body.locked .mine-list button{pointer-events:none;opacity:.55}
 .newrow{display:flex;gap:8px}
 .newrow input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:16px}
 .tag{font-size:11px;padding:1px 6px;border-radius:999px;letter-spacing:.04em;font-weight:600}
@@ -107,6 +107,15 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #paidChk,b
 .paid input{width:20px;height:20px;accent-color:var(--jade)}
 .stamp{display:inline-block;font-family:var(--serif);font-weight:700;color:var(--chili);border:2px solid var(--chili);border-radius:5px;padding:1px 7px;letter-spacing:.15em;transform:rotate(-8deg);font-size:15px;line-height:1.4}
 .pay .stamp{position:absolute;top:16px;right:16px;font-size:20px;padding:2px 10px}
+.paybox{display:flex;flex-direction:column;gap:8px}
+.wide{width:100%}
+.method{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--surface-2);font-weight:600;font-size:15px}
+.link-btn{border:0;background:none;color:var(--muted);font-size:14px;padding:4px 6px;text-decoration:underline;margin-left:auto;white-space:nowrap;flex:none}
+.paid .link-btn{font-weight:400}
+.any{width:100%;padding:12px 14px;border-radius:12px;border:1.5px dashed var(--jade);background:transparent;color:var(--jade);font-weight:700;font-size:15px}
+.any.on{border-style:solid;background:var(--jade-soft)}
+.nudge{background:var(--gold-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;font-size:14px;line-height:1.5}
+.nudge b{color:var(--gold)}
 
 /* 菜单 */
 .tabs{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px}
@@ -198,11 +207,12 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #paidChk,b
   </header>
 
   <div class="wx" id="status" hidden></div>
+  <div class="nudge" id="nudge" hidden></div>
   <div class="wx" id="wxTip" hidden>你在微信里打开的。如果付款按钮点了没反应，点右上角 ··· 选「在浏览器打开」再付。</div>
 
   <section class="step" id="stepWho">
     <div class="step-head"><span class="num">壹</span><h2>你是谁？</h2></div>
-    <p class="hint">点自己的名字。第一次来的朋友点最后那个。周四晚 7 点前没填的，默认算拼菜。</p>
+    <p class="hint">点自己的名字。第一次来的朋友点最后那个。周四晚 7 点前没填的，默认算这次不来。</p>
     <div class="names" id="names"></div>
     <div class="newrow" id="newRow" hidden><input id="newName" type="text" placeholder="你的名字" maxlength="12"><button class="btn primary" id="newBtn">加入</button></div>
   </section>
@@ -219,7 +229,7 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #paidChk,b
   <section class="step" id="stepC" hidden>
     <div class="step-head"><span class="num">叁</span><h2>付款，然后点菜</h2></div>
     <div class="pay">
-      <span class="stamp" id="payStamp" hidden>已付</span>
+      <span class="stamp" id="payStamp" hidden>已转</span>
       <div class="pay-amt"><b>$25</b><span>拼菜费 · 两人约拼一道菜</span></div>
       <a class="btn primary" id="venmoBtn" href="#">打开 Venmo 付 $25</a>
       <a class="link" id="venmoWeb" href="#" target="_blank" rel="noopener">没跳转？用 Venmo 网页版</a>
@@ -228,12 +238,22 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #paidChk,b
         <dt>Zelle</dt><dd id="zelleId"></dd><button class="btn ghost" data-copy="zelle">复制</button>
         <dt>备注</dt><dd id="payNote"></dd><button class="btn ghost" data-copy="note">复制</button>
       </dl>
-      <label class="paid"><input type="checkbox" id="paidChk"> 我已付款</label>
-      <p class="hint">用 Zelle 的话：复制号码，打开自己银行 App 里的 Zelle 粘贴，收款人会显示 MAOTIAN。Venmo 按钮没反应时，也可以复制用户名到 Venmo 里搜。付完勾一下「我已付款」，Martin 会对着到账记录核对。</p>
+      <div class="paybox" id="payBox">
+        <button class="btn ghost wide" id="paidBtn" style="font-size:16px;padding:11px 16px">我已转账</button>
+        <div class="method" id="methodPick" hidden>
+          <span>用哪个转的？</span>
+          <button class="btn ghost" data-method="Venmo">Venmo</button>
+          <button class="btn ghost" data-method="Zelle">Zelle</button>
+          <button class="link-btn" id="methodCancel">还没转</button>
+        </div>
+        <div class="paid" id="paidDone" hidden><span>✓ 已转账<span id="paidVia"></span>，等 Martin 核对</span><button class="link-btn" id="paidUndo">撤销</button></div>
+      </div>
+      <p class="hint">用 Zelle 的话：复制号码，打开自己银行 App 里的 Zelle 粘贴，收款人会显示 MAOTIAN。Venmo 按钮没反应时，也可以复制用户名到 Venmo 里搜。转完点「我已转账」，选一下用的是 Venmo 还是 Zelle，Martin 会对着到账记录核对。</p>
     </div>
 
     <h3 style="margin-top:8px">想吃什么？<span class="left" id="left"></span></h3>
     <p class="hint">每人最多 3 道。红色数字是已经想吃的人数，票多的先订。</p>
+    <button class="any" id="anyBtn" aria-pressed="false">我不挑，大家定就好</button>
     <div class="tabs" role="tablist">
       <button id="tabRec" class="sel" data-tab="rec">大家常点</button>
       <button id="tabAll" data-tab="all">全部菜单</button>
@@ -402,7 +422,8 @@ const DEMO_ROSTER = ['顾承辅导','丹清辅导','逸卓','Lydia','Andrew','Sa
 const DEMO_PEOPLE = {
   'Martin': { mode: 'C', paid: true,  votes: ['S10', '64', '27'] },
   'Lydia':  { mode: 'C', paid: true,  votes: ['S10', '87', '61'] },
-  'Andrew': { mode: 'C', paid: false, votes: ['S10', '64', '16'] },
+  'Andrew': { mode: 'C', paid: false, votes: [] },
+  'Sabrina': { mode: 'C', paid: true, method: 'Zelle', any: true },
   'Nancy':  { mode: 'C', paid: true,  votes: ['64', '27', '87'] },
   'Jessy':  { mode: 'A', bring: ['红烧肉', '凉拌黄瓜'] },
   '晓霏':   { mode: 'A', bring: ['水果拼盘'] },
@@ -414,7 +435,7 @@ function demoState() {
     return { id, cat, zh, en, price: price ? Number(price) : null, spicy: sp === 'Y', rec: rec === 'Y', note: note || '', order: i };
   });
   const people = {};
-  DEMO_ROSTER.forEach(n => { people[n] = Object.assign({ mode: null, votes: [], bring: [], paid: false }, DEMO_PEOPLE[n] || {}); });
+  DEMO_ROSTER.forEach(n => { people[n] = Object.assign({ mode: null, votes: [], bring: [], paid: false, method: '', any: false }, DEMO_PEOPLE[n] || {}); });
   const fri = new Date(); fri.setHours(0,0,0,0); while (fri.getDay() !== 5) fri.setDate(fri.getDate() + 1);
   const dl = new Date(fri); dl.setDate(dl.getDate() - 1); dl.setHours(19, 0, 0, 0);
   return { service: { date: fri.toISOString().slice(0, 10), deadline: dl.toISOString(), locked: false, restaurant: '香港园' },
@@ -424,7 +445,7 @@ function demoState() {
 /* ===== 状态 ===== */
 let S = null;            // 服务器状态 {service, roster, people, menu, config}
 let MENU = [], CATS = [], custom = [];
-let me = null, tab = 'rec', query = '', saving = 0;
+let me = null, tab = 'rec', query = '', saving = 0, picking = false;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = n => n == null ? '时价' : '$' + (Number.isInteger(n) ? n : n.toFixed(2));
@@ -436,7 +457,7 @@ const dish = id => allDishes().find(d => d.id === id) || (id && { id, zh: id, en
 // 不再显示在名单里的人（Sheet 里的行和历史数据保留）。本月自己填过、或用「新朋友」重新加回来的仍会显示。
 const HIDDEN = new Set(['王彩华', '汪明', 'CC', '潇楠', '禹贤', '子云', '庞迪', '林晨']);
 const roster = () => S.roster.filter(n => !HIDDEN.has(n) || n === me || (S.people[n] && S.people[n].mode));
-const P = n => S.people[n] || (S.people[n] = { mode: null, votes: [], bring: [], paid: false });
+const P = n => S.people[n] || (S.people[n] = { mode: null, votes: [], bring: [], paid: false, method: '', any: false });
 const myP = () => me ? P(me) : null;
 const locked = () => S && S.service.locked;
 function serviceLabel() {
@@ -466,7 +487,7 @@ async function doSave() {
   try {
     const r = await fetch(API_URL, { method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'save', name: me, mode: p.mode, votes: p.votes, bring: p.bring, paid: p.paid }) });
+      body: JSON.stringify({ action: 'save', name: me, mode: p.mode, votes: p.votes, bring: p.bring, paid: p.paid, method: p.method || '', any: !!p.any }) });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
     const mine = S.people[me];
@@ -503,7 +524,9 @@ function plan() {
   const cutCount = k > 0 && rank[k - 1] ? rank[k - 1].names.length : null;
   const tie = cutCount != null && rank[k] && rank[k].names.length === cutCount;
   const paid = C.filter(n => P(n).paid);
-  return { C, nC, budget, k, rank, cutCount, tie, paid, leftover: budget - k * S.config.perDish };
+  const any = C.filter(n => P(n).any);
+  const noVote = C.filter(n => !P(n).any && !(P(n).votes || []).length);
+  return { C, nC, budget, k, rank, cutCount, tie, paid, any, noVote, leftover: budget - k * S.config.perDish };
 }
 
 /* ===== 渲染 ===== */
@@ -545,8 +568,11 @@ function renderPay(p) {
   $('#venmoId').textContent = '@' + VENMO_ID + '（Maotian Li）';
   $('#zelleId').textContent = ZELLE_ID;
   $('#payNote').textContent = payNote();
-  $('#paidChk').checked = !!p.paid;
   $('#payStamp').hidden = !p.paid;
+  $('#paidBtn').hidden = !!p.paid || picking;
+  $('#methodPick').hidden = !!p.paid || !picking;
+  $('#paidDone').hidden = !p.paid;
+  $('#paidVia').textContent = p.method ? `（${p.method}）` : '';
 }
 function dishRow(d, m, mine) {
   const n = (m.get(d.id) || []).length, on = mine.includes(d.id);
@@ -562,7 +588,9 @@ function dishRow(d, m, mine) {
 }
 function renderDishes() {
   const p = myP(), mine = p.votes || [], m = counts();
-  $('#left').textContent = mine.length >= MAX() ? `已选满 ${MAX()} 道` : `还能选 ${MAX() - mine.length} 道`;
+  $('#left').textContent = p.any ? '交给大家定了' : mine.length >= MAX() ? `已选满 ${MAX()} 道` : `还能选 ${MAX() - mine.length} 道`;
+  $('#anyBtn').classList.toggle('on', !!p.any); $('#anyBtn').setAttribute('aria-pressed', !!p.any);
+  $('#anyBtn').textContent = p.any ? '✓ 我不挑，大家定就好' : '我不挑，大家定就好';
   $('#tabRec').classList.toggle('sel', tab === 'rec');
   $('#tabAll').classList.toggle('sel', tab === 'all');
   $('#search').hidden = tab !== 'all';
@@ -601,7 +629,7 @@ function renderBoard() {
   const cnt = mode => roster().filter(n => P(n).mode === mode).length;
   $('#tally').innerHTML = [[Pl.nC, '拼菜'], [cnt('A'), '自带'], [cnt('NA'), '不来'], [cnt(null), '还没填']]
     .map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
-  $('#rankSub').textContent = Pl.nC ? `${Pl.nC} 人拼菜 → 订 ${Pl.k} 道` : '';
+  $('#rankSub').textContent = Pl.nC ? `${Pl.nC} 人拼菜 → 订 ${Pl.k} 道${Pl.any.length ? ` · ${Pl.any.length} 人不挑` : ''}` : '';
   const max = Pl.rank.length ? Pl.rank[0].names.length : 1;
   $('#rank').innerHTML = Pl.rank.length ? Pl.rank.map((x, i) => {
     const n = x.names.length, inTop = i < Pl.k, isTie = Pl.tie && n === Pl.cutCount;
@@ -616,24 +644,42 @@ function renderBoard() {
 }
 function orderText(Pl) {
   const lines = Pl.rank.slice(0, Pl.k).map((x, i) => `${i + 1}. ${x.d.zh}${x.d.en ? ' ' + x.d.en : ''}`);
-  return `${S.service.restaurant} ${RESTAURANT_PHONE}\n${serviceLabel().short} 周五 6pm 取\n共 ${Pl.k} 道，每道做 $${S.config.perDish} 左右的量：\n${lines.join('\n') || '（还没人点菜）'}\n白饭少放一些，谢谢！`;
+  const rice = Math.max(1, Math.round(Pl.k * 2 / 3));   // 大约每 3 道配 2 大盒
+  const riceLine = Pl.k ? `\n请配 ${rice} 大盒白饭（不包含的话就单加 ${rice} 大盒），谢谢！` : '';
+  return `${S.service.restaurant} ${RESTAURANT_PHONE}\n${serviceLabel().short} 周五 6pm 取\n共 ${Pl.k} 道，每道做 $${S.config.perDish} 左右的量：\n${lines.join('\n') || '（还没人点菜）'}${riceLine}`;
 }
 function renderAdmin() {
   const Pl = plan(), paidAmt = Pl.paid.length * PRICE();
-  $('#adminSum').textContent = `订 ${Pl.k} 道 · 已收 $${paidAmt}/$${Pl.budget}`;
-  $('#stats').innerHTML = [['拼菜人数', Pl.nC], ['预算', '$' + Pl.budget], ['要订', Pl.k + ' 道'], ['已付款', `${Pl.paid.length}/${Pl.nC}`]]
+  $('#adminSum').textContent = `订 ${Pl.k} 道 · 自报 $${paidAmt}/$${Pl.budget}`;
+  $('#stats').innerHTML = [['拼菜人数', Pl.nC], ['预算', '$' + Pl.budget], ['要订', Pl.k + ' 道'], ['自报已转', `${Pl.paid.length}/${Pl.nC}`]]
     .map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join('');
   const unpaid = Pl.C.filter(n => !P(n).paid), none = roster().filter(n => !P(n).mode);
   $('#todo').innerHTML =
-    `<p>未付款：${unpaid.length ? `<b>${unpaid.map(esc).join('、')}</b>（截止前私聊）` : '都付了 <span class="stamp">已付</span>'}</p>` +
-    `<p>还没填：${none.length ? esc(none.join('、')) + '（默认拼菜）' : '全员已填'}</p>`;
+    `<p>没点转账：${unpaid.length ? `<b>${unpaid.map(esc).join('、')}</b>（截止前私聊）` : '都点了 <span class="stamp">已转</span>'}</p>` +
+    (Pl.paid.length ? `<p>自报已转，待核对：${Pl.paid.map(n => esc(n) + (P(n).method ? `（${esc(P(n).method)}）` : '（方式未选）')).join('、')}</p>` : '') +
+    (Pl.noVote.length ? `<p>拼菜但没点菜：${esc(Pl.noVote.join('、'))}</p>` : '') +
+    `<p>还没填：${none.length ? esc(none.join('、')) + '（截止后算不来）' : '全员已填'}</p>`;
   $('#orderText').textContent = orderText(Pl);
   const notes = [];
   if (Pl.tie) notes.push('最后一道有并列，打电话时你来定。');
   if (Pl.leftover > 0) notes.push(`单数人拼菜，多出 $${Pl.leftover}，可以加一份小吃（如排骨 $12）或让每道多装一点。`);
   $('#extra').textContent = notes.join(' '); $('#extra').hidden = !notes.length;
 }
-function renderAll() { renderHeader(); renderNames(); renderHow(); renderBranch(); renderBoard(); renderAdmin(); }
+function renderNudge() {
+  const el = $('#nudge');
+  if (!S || locked() || !me) { el.hidden = true; return; }
+  const dl = new Date(S.service.deadline), from = new Date(dl); from.setHours(12, 0, 0, 0);
+  if (Date.now() < from) { el.hidden = true; return; }
+  const p = myP(), items = [];
+  if (!p.mode) items.push('还没选参与方式，截止后默认算「这次不来」');
+  else if (p.mode === 'C') {
+    if (!p.paid) items.push('还没点「我已转账」');
+    if (!p.any && !(p.votes || []).length) items.push('还没点菜（不挑的话点「我不挑」）');
+  }
+  el.hidden = !items.length;
+  if (items.length) el.innerHTML = `<b>今晚 ${dl.getHours() > 12 ? dl.getHours() - 12 : dl.getHours()} 点截止</b>：${items.map(esc).join('；')}。`;
+}
+function renderAll() { renderHeader(); renderNames(); renderHow(); renderBranch(); renderBoard(); renderAdmin(); renderNudge(); }
 
 /* ===== 交互 ===== */
 let toastTimer;
@@ -648,7 +694,7 @@ async function copy(text, ok) {
 }
 function guard() { if (locked()) { toast('已截止，改动请在群里联系 Martin'); return true; } return false; }
 function pick(name) {
-  me = name; tab = 'rec'; query = ''; $('#search').value = ''; $('#bringInput').value = '';
+  me = name; tab = 'rec'; query = ''; picking = false; $('#search').value = ''; $('#bringInput').value = '';
   try { localStorage.setItem('mypg_me', name); } catch (_) {}
   renderAll(); $('#stepHow').scrollIntoView({ block: 'start' });
 }
@@ -669,12 +715,25 @@ $('#modes').addEventListener('click', e => {
   const b = e.target.closest('.mode'); if (!b || !me || guard()) return;
   const p = myP(), m = b.dataset.mode;
   p.mode = m;
-  if (m !== 'C') { p.votes = []; p.paid = false; }
+  if (m !== 'C') { p.votes = []; p.paid = false; p.method = ''; p.any = false; }
   if (m !== 'A') p.bring = [];
   scheduleSave();
   $({ C: '#stepC', A: '#stepA', NA: '#stepNA' }[m]).scrollIntoView({ block: 'start' });
 });
-$('#paidChk').addEventListener('change', e => { if (guard()) { e.target.checked = !e.target.checked; return; } myP().paid = e.target.checked; scheduleSave(); if (e.target.checked) toast('谢谢！已标记付款'); });
+$('#payBox').addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('#paidBtn')) { if (guard()) return; picking = true; renderAll(); return; }
+  if (t.closest('#methodCancel')) { picking = false; renderAll(); toast('转完再回来点一下就好'); return; }
+  const mb = t.closest('[data-method]');
+  if (mb) { if (guard()) return; const p = myP(); p.paid = true; p.method = mb.dataset.method; picking = false; scheduleSave(); toast(`谢谢！已标记用 ${p.method} 转账`); return; }
+  if (t.closest('#paidUndo')) { if (guard()) return; const p = myP(); p.paid = false; p.method = ''; scheduleSave(); }
+});
+$('#anyBtn').addEventListener('click', () => {
+  if (guard()) return;
+  const p = myP(); p.any = !p.any;
+  if (p.any) { p.votes = []; toast('好的，交给大家定'); }
+  scheduleSave();
+});
 document.querySelector('.pay').addEventListener('click', e => {
   const b = e.target.closest('[data-copy]'); if (!b) return;
   copy({ venmo: VENMO_ID, zelle: ZELLE_RAW, note: payNote() }[b.dataset.copy], { venmo: 'Venmo 用户名已复制', zelle: 'Zelle 号码已复制，去银行 App 粘贴', note: '备注已复制' }[b.dataset.copy]);
@@ -695,7 +754,7 @@ function toggleVote(id) {
   const p = myP(); p.votes = p.votes || [];
   const i = p.votes.indexOf(id);
   if (i >= 0) p.votes.splice(i, 1);
-  else { if (p.votes.length >= MAX()) { toast(`最多选 ${MAX()} 道，先取消一道`); return; } p.votes.push(id); }
+  else { if (p.votes.length >= MAX()) { toast(`最多选 ${MAX()} 道，先取消一道`); return; } p.votes.push(id); p.any = false; }
   scheduleSave();
 }
 $('#bringInput').addEventListener('input', checkDup);
@@ -714,9 +773,10 @@ function tick() {
   if (!S) return;
   const dl = new Date(S.service.deadline), ms = dl - Date.now(), el = $('#countdown');
   const dlTxt = `周四 ${dl.getMonth() + 1}/${dl.getDate()} 晚 ${dl.getHours()} 点截止`;
-  if (ms <= 0) { el.textContent = '已截止，Martin 正在下单'; S.service.locked = true; document.body.classList.add('locked'); return; }
+  if (ms <= 0) { el.textContent = '已截止，Martin 正在下单'; S.service.locked = true; document.body.classList.add('locked'); renderNudge(); return; }
   const h = Math.floor(ms / 3600000), mi = Math.floor(ms % 3600000 / 60000);
   el.textContent = `${dlTxt} · 还剩 ${h >= 24 ? `${Math.floor(h / 24)} 天 ${h % 24} 小时` : `${h} 小时 ${mi} 分`}`;
+  renderNudge();
 }
 
 /* ===== 启动 ===== */
