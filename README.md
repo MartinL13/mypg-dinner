@@ -11,7 +11,7 @@ Each month everyone opens one link from the WeChat group and, in under a minute:
 1. Taps their own name
 2. Picks how they're joining this month — **拼菜** (chip in $25 for restaurant dishes), **自带** (bring a homemade dish), or **不来** (skip)
 3. Does only the part that applies to them:
-   - 拼菜 → Venmo deep link / Zelle copy button with the note prefilled, then "+1" up to three dishes from the restaurant menu
+   - 拼菜 → Venmo deep link with the note prefilled, then "+1" up to three dishes from the restaurant menu
    - 自带 → registers the dish; duplicates are flagged so nobody brings the same thing twice
    - 不来 → done
 

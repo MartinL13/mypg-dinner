@@ -235,7 +235,6 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #payBox bu
       <a class="link" id="venmoWeb" href="#" target="_blank" rel="noopener">没跳转？用 Venmo 网页版</a>
       <dl class="kv">
         <dt>Venmo</dt><dd id="venmoId"></dd><button class="btn ghost" data-copy="venmo">复制</button>
-        <dt>Zelle</dt><dd id="zelleId"></dd><button class="btn ghost" data-copy="zelle">复制</button>
         <dt>备注</dt><dd id="payNote"></dd><button class="btn ghost" data-copy="note">复制</button>
       </dl>
       <div class="paybox" id="payBox">
@@ -243,12 +242,11 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #payBox bu
         <div class="method" id="methodPick" hidden>
           <span>用哪个转的？</span>
           <button class="btn ghost" data-method="Venmo">Venmo</button>
-          <button class="btn ghost" data-method="Zelle">Zelle</button>
           <button class="link-btn" id="methodCancel">还没转</button>
         </div>
         <div class="paid" id="paidDone" hidden><span>✓ 已转账<span id="paidVia"></span>，等 Martin 核对</span><button class="link-btn" id="paidUndo">撤销</button></div>
       </div>
-      <p class="hint">用 Zelle 的话：复制号码，打开自己银行 App 里的 Zelle 粘贴，收款人会显示 MAOTIAN。Venmo 按钮没反应时，也可以复制用户名到 Venmo 里搜。转完点「我已转账」，选一下用的是 Venmo 还是 Zelle，Martin 会对着到账记录核对。</p>
+      <p class="hint">Venmo 按钮没反应时，可以复制用户名到 Venmo 里搜。不方便用 Venmo 的话私聊 Martin。转完点「我已转账」，Martin 会对着到账记录核对。</p>
     </div>
 
     <h3 style="margin-top:8px">想吃什么？<span class="left" id="left"></span></h3>
@@ -307,8 +305,6 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #payBox bu
 /* ===== 配置 ===== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbwWF7QEvWhZIDPUlmBEjUAdZtBDz_LGD5Zi-c1fAXyHcjCBmajTP4oJfifTDtDhrJ57zg/exec';   // 留空 = 演示模式
 const VENMO_ID = 'Maotian-Li';
-const ZELLE_ID = '346-317-1376';
-const ZELLE_RAW = '3463171376';
 const RESTAURANT_PHONE = '(732) 356-5779';
 
 /* ===== 演示数据（没接后端时用） ===== */
@@ -423,7 +419,7 @@ const DEMO_PEOPLE = {
   'Martin': { mode: 'C', paid: true,  votes: ['S10', '64', '27'] },
   'Lydia':  { mode: 'C', paid: true,  votes: ['S10', '87', '61'] },
   'Andrew': { mode: 'C', paid: false, votes: [] },
-  'Sabrina': { mode: 'C', paid: true, method: 'Zelle', any: true },
+  'Sabrina': { mode: 'C', paid: true, method: 'Venmo', any: true },
   'Nancy':  { mode: 'C', paid: true,  votes: ['64', '27', '87'] },
   'Jessy':  { mode: 'A', bring: ['红烧肉', '凉拌黄瓜'] },
   '晓霏':   { mode: 'A', bring: ['水果拼盘'] },
@@ -566,7 +562,6 @@ function renderPay(p) {
   $('#venmoBtn').textContent = `打开 Venmo 付 $${amt}`;
   $('#venmoWeb').href = `https://venmo.com/${encodeURIComponent(VENMO_ID)}?txn=pay&amount=${amt}&note=${note}`;
   $('#venmoId').textContent = '@' + VENMO_ID + '（Maotian Li）';
-  $('#zelleId').textContent = ZELLE_ID;
   $('#payNote').textContent = payNote();
   $('#payStamp').hidden = !p.paid;
   $('#paidBtn').hidden = !!p.paid || picking;
@@ -722,7 +717,7 @@ $('#modes').addEventListener('click', e => {
 });
 $('#payBox').addEventListener('click', e => {
   const t = e.target;
-  if (t.closest('#paidBtn')) { if (guard()) return; picking = true; renderAll(); return; }
+  if (t.closest('#paidBtn')) { if (guard()) return; const p = myP(); p.paid = true; p.method = 'Venmo'; picking = false; scheduleSave(); toast('谢谢！已标记转账'); return; }
   if (t.closest('#methodCancel')) { picking = false; renderAll(); toast('转完再回来点一下就好'); return; }
   const mb = t.closest('[data-method]');
   if (mb) { if (guard()) return; const p = myP(); p.paid = true; p.method = mb.dataset.method; picking = false; scheduleSave(); toast(`谢谢！已标记用 ${p.method} 转账`); return; }
@@ -736,7 +731,7 @@ $('#anyBtn').addEventListener('click', () => {
 });
 document.querySelector('.pay').addEventListener('click', e => {
   const b = e.target.closest('[data-copy]'); if (!b) return;
-  copy({ venmo: VENMO_ID, zelle: ZELLE_RAW, note: payNote() }[b.dataset.copy], { venmo: 'Venmo 用户名已复制', zelle: 'Zelle 号码已复制，去银行 App 粘贴', note: '备注已复制' }[b.dataset.copy]);
+  copy({ venmo: VENMO_ID, note: payNote() }[b.dataset.copy], { venmo: 'Venmo 用户名已复制', note: '备注已复制' }[b.dataset.copy]);
 });
 document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderDishes(); });
 $('#search').addEventListener('input', e => { query = e.target.value; renderDishes(); });
