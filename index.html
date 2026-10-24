@@ -186,6 +186,7 @@ body.locked .mode,body.locked .dish,body.locked #bringBtn,body.locked #payBox bu
 .stats div{background:var(--surface-2);border-radius:12px;padding:10px 12px}
 .stats dt{font-size:12px;color:var(--muted)}
 .stats dd{margin:0;font-family:var(--serif);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.stats dd small{display:block;font-family:inherit;font-size:11px;font-weight:400;color:var(--muted)}
 .todo{display:flex;flex-direction:column;gap:8px;font-size:15px}
 .todo p{margin:0}
 .todo b{color:var(--chili)}
@@ -435,7 +436,7 @@ function demoState() {
   const fri = new Date(); fri.setHours(0,0,0,0); while (fri.getDay() !== 5) fri.setDate(fri.getDate() + 1);
   const dl = new Date(fri); dl.setDate(dl.getDate() - 1); dl.setHours(19, 0, 0, 0);
   return { service: { date: fri.toISOString().slice(0, 10), deadline: dl.toISOString(), locked: false, restaurant: '香港园' },
-    roster: DEMO_ROSTER, people, menu, config: { max: 3, price: 25, perDish: 50 } };
+    roster: DEMO_ROSTER, people, menu, config: { max: 3, price: 25, perDish: 50, subsidy: 100 } };
 }
 
 /* ===== 状态 ===== */
@@ -448,6 +449,7 @@ const money = n => n == null ? '时价' : '$' + (Number.isInteger(n) ? n : n.toF
 const TAG = { C: '拼菜', A: '自带', NA: '不来' };
 const MAX = () => (S && S.config.max) || 3;
 const PRICE = () => (S && S.config.price) || 25;
+const SUBSIDY = () => (S && S.config.subsidy != null) ? S.config.subsidy : 100;   // 团契每次资助
 const allDishes = () => MENU.concat(custom);
 const dish = id => allDishes().find(d => d.id === id) || (id && { id, zh: id, en: '', cat: '自定义', price: null, order: 9999, custom: true });
 // 不再显示在名单里的人（Sheet 里的行和历史数据保留）。本月自己填过、或用「新朋友」重新加回来的仍会显示。
@@ -514,7 +516,7 @@ function counts() {
 }
 function plan() {
   const C = roster().filter(n => P(n).mode === 'C');
-  const nC = C.length, budget = nC * PRICE(), k = Math.floor(nC / 2);
+  const nC = C.length, fees = nC * PRICE(), budget = nC ? fees + SUBSIDY() : 0, k = Math.floor(budget / S.config.perDish);
   const rank = [...counts().entries()].map(([id, names]) => ({ d: dish(id), names }))
     .sort((a, b) => b.names.length - a.names.length || a.d.order - b.d.order);
   const cutCount = k > 0 && rank[k - 1] ? rank[k - 1].names.length : null;
@@ -522,7 +524,7 @@ function plan() {
   const paid = C.filter(n => P(n).paid);
   const any = C.filter(n => P(n).any);
   const noVote = C.filter(n => !P(n).any && !(P(n).votes || []).length);
-  return { C, nC, budget, k, rank, cutCount, tie, paid, any, noVote, leftover: budget - k * S.config.perDish };
+  return { C, nC, fees, budget, k, rank, cutCount, tie, paid, any, noVote, leftover: budget - k * S.config.perDish };
 }
 
 /* ===== 渲染 ===== */
@@ -645,8 +647,8 @@ function orderText(Pl) {
 }
 function renderAdmin() {
   const Pl = plan(), paidAmt = Pl.paid.length * PRICE();
-  $('#adminSum').textContent = `订 ${Pl.k} 道 · 自报 $${paidAmt}/$${Pl.budget}`;
-  $('#stats').innerHTML = [['拼菜人数', Pl.nC], ['预算', '$' + Pl.budget], ['要订', Pl.k + ' 道'], ['自报已转', `${Pl.paid.length}/${Pl.nC}`]]
+  $('#adminSum').textContent = `订 ${Pl.k} 道 · 自报 $${paidAmt}/$${Pl.fees}`;
+  $('#stats').innerHTML = [['拼菜人数', Pl.nC], ['预算', `$${Pl.budget}<small>（含团契 $${SUBSIDY()}）</small>`], ['要订', Pl.k + ' 道'], ['自报已转', `${Pl.paid.length}/${Pl.nC}`]]
     .map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join('');
   const unpaid = Pl.C.filter(n => !P(n).paid), none = roster().filter(n => !P(n).mode);
   $('#todo').innerHTML =
@@ -657,7 +659,7 @@ function renderAdmin() {
   $('#orderText').textContent = orderText(Pl);
   const notes = [];
   if (Pl.tie) notes.push('最后一道有并列，打电话时你来定。');
-  if (Pl.leftover > 0) notes.push(`单数人拼菜，多出 $${Pl.leftover}，可以加一份小吃（如排骨 $12）或让每道多装一点。`);
+  if (Pl.leftover > 0) notes.push(`预算多出 $${Pl.leftover}，可以加一份小吃（如排骨 $12）或让每道多装一点。`);
   $('#extra').textContent = notes.join(' '); $('#extra').hidden = !notes.length;
 }
 function renderNudge() {

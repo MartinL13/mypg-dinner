@@ -19,6 +19,7 @@ const SHEET_DATA = '网页数据';
 const DEADLINE_HOUR = 19;          // 服事日前一天（周四）晚 7 点截止
 const PRICE_PER_PERSON = 25;
 const PER_DISH = 50;               // 一道菜 ≈ $50 ≈ 两人
+const SUBSIDY = 100;               // 团契每次资助 $100，用来多订菜
 const MAX_VOTES = 3;
 const RESTAURANT = '香港园';
 
@@ -73,7 +74,7 @@ function state() {
 
   return {
     service: { date: svc.date, deadline: svc.deadline.toISOString(), locked: new Date() > svc.deadline, restaurant: RESTAURANT },
-    roster, people, menu: readMenu(ss), config: { max: MAX_VOTES, price: PRICE_PER_PERSON, perDish: PER_DISH }
+    roster, people, menu: readMenu(ss), config: { max: MAX_VOTES, price: PRICE_PER_PERSON, perDish: PER_DISH, subsidy: SUBSIDY }
   };
 }
 
@@ -143,7 +144,7 @@ function save(body) {
 function writeSummary(ss, sh, lay, svc) {
   const st = stateLite(ss, sh, lay, svc);
   const C = Object.keys(st).filter(n => st[n].mode === 'C');
-  const k = Math.floor(C.length / 2);
+  const k = C.length ? Math.floor((C.length * PRICE_PER_PERSON + SUBSIDY) / PER_DISH) : 0;
   // 票数排行
   const cnt = {};
   C.forEach(n => st[n].votes.forEach(id => { cnt[id] = (cnt[id] || 0) + 1; }));
